@@ -539,14 +539,19 @@ var killMe = new renderer(primitives.ELIPSE);
 var timer = 0;
 var bounce = false;
 
+var boxTrans = new transform();
+
 const changeSpeed = 1000;
 const startingCol = new colour(255, 255, 255);
 const endingCol = new colour(70, 255, 200);
 
+
 function update(delta)
 {
+    boxTrans.position = vecMath.lerp(new vector(0, 0), new vector(50, 50), timer);
+   
     killMe.colour = colourMath.colourLerp(startingCol, endingCol, timer);
-
+    
     var coeffecient = bounce !== true ? 1 : -1;
     timer += (delta / changeSpeed) * coeffecient;
 
@@ -558,7 +563,7 @@ function draw(interpolation)
 {
     context.clearRect(0, 0, 640, 480);
     context.fillStyle = colourMath.toHex(killMe.colour);
-    context.fillRect(50, 50, 100, 100);
+    context.fillRect(boxTrans.position.getX(), boxTrans.position.getY(), 100, 100);
 }
 
 function end(fps, panic) { }
