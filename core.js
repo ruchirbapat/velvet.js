@@ -1,3 +1,5 @@
+/* ---- The source file for velvet JS game engine ---- */
+
 //Console and debugging function wrappers
 const debug =
 {
@@ -173,13 +175,13 @@ const vecMath =
     random: function(min, max)
     {
         //Check type of the parameters.
-        if(typeof min != 'number') debug.log("not a valid parameter type");
-        if(typeof max != 'number') debug.log("not a valid parameter type");
+        this.checkType(min);
+        this.checkType(max);
 
         //Stores the result
         var result = new vector();
-        var answerX = (Math.random() * max) + min;
-        var answerY = (Math.random() * max) + min;
+        var answerX = (Math.random() * max.getX()) + min.getX();
+        var answerY = (Math.random() * max.getY()) + min.getY();
 
         //Set
         result.set(answerX, answerY);
@@ -543,20 +545,30 @@ var boxTrans = new transform();
 
 const changeSpeed = 1000;
 const startingCol = new colour(255, 255, 255);
-const endingCol = new colour(70, 255, 200);
+var endingCol = new colour(70, 255, 200);
 
+
+const startingPos = new vector(0, 0);
+var endingPos = new vector(50, 50);
 
 function update(delta)
 {
-    boxTrans.position = vecMath.lerp(new vector(0, 0), new vector(50, 50), timer);
+    boxTrans.position = vecMath.lerp(startingPos, endingPos, timer);
    
     killMe.colour = colourMath.colourLerp(startingCol, endingCol, timer);
     
     var coeffecient = bounce !== true ? 1 : -1;
     timer += (delta / changeSpeed) * coeffecient;
 
-    if(timer > 1) bounce = true;
-    if (timer < 0) bounce = false;
+    if (timer < 0) 
+    {
+        bounce = false; 
+        
+        endingPos = vecMath.random(new vector(25, 25), new vector(75, 75));
+        endingCol = colourMath.random();
+    }
+    
+    if (timer > 1) bounce = true;
 }
 
 function draw(interpolation)
@@ -566,55 +578,13 @@ function draw(interpolation)
     context.fillRect(boxTrans.position.getX(), boxTrans.position.getY(), 100, 100);
 }
 
-function end(fps, panic) { }
+function end(fps, panic) 
+{
+    debug.log(fps);
+}
 
 MainLoop.setMaxAllowedFPS(60);
 MainLoop.setUpdate(update);
 MainLoop.setDraw(draw);
 MainLoop.setEnd(end);
 MainLoop.start();
-
-/*Update crap:
-var lastFrame = 0; //Last Ms time frame was run
-var maxFPS = 60; //Maximum frames every second
-var deltaTime = 0; //The difference in frame time
-
-var milliFPS = 1000 / maxFPS; //Avoid repeat calculation
-
-function mainLoop(timeStamp)
-{
-    //Limit the frame rate
-    if(timeStamp < lastFrame + milliFPS)
-    {
-        //DO not udate or draw on this frame
-        requestAnimationFrame(mainLoop);
-        return;
-    }
-
-    //Increase last frame time
-    delta = timeStamp - lastFrame;
-    lastFrame = timeStamp;
-
-    //Change object properties, using delta time
-    update(delta);
-
-    //Draw all renderers
-    draw();
-
-    //Go to next frame
-    requestAnimationFrame(mainLoop);
-}
-*/
-
-/* This is the goal
-function update()
-{
-    if(input.buttonDown(keys.left)) { playerVelocty = presets.left; }
-    if(input.buttonDown(keys.right)) { playerVelocty = presets.right; }
-    if(input.buttonDown(keys.up)) { playerVelocty = presets.up; }
-    if(input.buttonDown(keys.down)) { playerVelocty = presets.down; }
-
-    player.position.addWith(playerVelocity);
-    console.log(player.position.toString());
-}
-*/
