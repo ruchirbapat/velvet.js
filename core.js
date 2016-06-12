@@ -539,12 +539,16 @@ var killMe = new renderer(primitives.ELIPSE);
 var timer = 0;
 var bounce = false;
 
+const changeSpeed = 1000;
+const startingCol = new colour(255, 255, 255);
+const endingCol = new colour(70, 255, 200);
+
 function update(delta)
 {
-    killMe.colour = colourMath.colourLerp(new colour(255, 255, 255), new colour(70, 255, 200), timer);
+    killMe.colour = colourMath.colourLerp(startingCol, endingCol, timer);
 
     var coeffecient = bounce !== true ? 1 : -1;
-    timer += (delta / 1000) * coeffecient;
+    timer += (delta / changeSpeed) * coeffecient;
 
     if(timer > 1) bounce = true;
     if (timer < 0) bounce = false;
