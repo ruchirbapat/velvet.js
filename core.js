@@ -529,6 +529,63 @@ var renderer = function(renderShape = primitives.SQUARE)
 {
     this.colour = new colour(0, 0, 0);
     this.renderDepth = 0;
+
+    //Temporary drawing routine
+    this.draw = function(attachedGameObject)
+    {
+        context.fillStyle = colourMath.toHex(this.colour);
+
+        var trans = attachedGameObject.getComponent(transform);
+
+        context.fillRect(trans.position.getX(), trans.position.getY(), trans.scale.getX(), trans.scale.getY());
+    }
+}
+
+var gameObject = function(newName = "GameObject")
+{
+    this.components = [];
+    var name = '';
+
+    this.setName = function(stringName)
+    {
+        //Check that name is a string type
+        if((typeof stringName) != 'string') debug.error("Gameobject name must be a string type");
+
+        name = stringName;
+    }
+
+    this.getName = function() { return name; }
+
+    this.getComponent = function(type)
+    {
+        for(var i = 0; i < this.components.length; i++)
+        {
+            if(this.components[i] instanceof type)
+            {
+                return this.components[i];
+            }
+        }
+
+        //Failed to find components
+        debug.warning("No component exists of that type");
+        return null;
+    }
+
+    this.addComponent = function(componentInstance)
+    {
+        //Check that it is a valid componenet
+        //e.g. renderer
+        //--> How would I do this <--
+
+        //Add to list
+        this.components.push(componentInstance);
+    }
+
+    //Name it
+    this.setName(newName);
+
+    //Everygame object has a transform component
+    this.addComponent(new transform());
 }
 
 var canvas = document.getElementById("canvas"),
@@ -537,50 +594,66 @@ var canvas = document.getElementById("canvas"),
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-var killMe = new renderer(primitives.ELIPSE);
 var timer = 0;
 var bounce = false;
-
-var boxTrans = new transform();
 
 const changeSpeed = 1000;
 const startingCol = new colour(255, 255, 255);
 var endingCol = new colour(70, 255, 200);
 
-
 const startingPos = new vector(0, 0);
 var endingPos = new vector(50, 50);
 
+var box;
+var boxTransform;
+var boxRenderer;
+
+function awake() { }
+
+function start()
+{
+    //Setup Gameobject to have a renderer and named 'BOX'
+    box = new gameObject("Box");
+    box.addComponent(new renderer(primitives.SQUARE));
+
+    //Set variables
+    boxTransform = box.getComponent(transform);
+    boxRenderer = box.getComponent(renderer);
+
+    //Set properties of components
+    boxTransform.scale = new vector(100, 100);
+}
+
 function update(delta)
 {
-    boxTrans.position = vecMath.lerp(startingPos, endingPos, timer);
-   
-    killMe.colour = colourMath.colourLerp(startingCol, endingCol, timer);
-    
+    //Lerp position and colour
+    boxTransform.position = vecMath.lerp(startingPos, endingPos, timer);
+    boxRenderer.colour = colourMath.colourLerp(startingCol, endingCol, timer);
+
+    //Determine bounce back of lerp
     var coeffecient = bounce !== true ? 1 : -1;
     timer += (delta / changeSpeed) * coeffecient;
 
-    if (timer < 0) 
+    if (timer < 0)
     {
-        bounce = false; 
-        
+        bounce = false;
+
         endingPos = vecMath.random(new vector(25, 25), new vector(75, 75));
         endingCol = colourMath.random();
     }
-    
+
     if (timer > 1) bounce = true;
 }
 
 function draw(interpolation)
 {
     context.clearRect(0, 0, 640, 480);
-    context.fillStyle = colourMath.toHex(killMe.colour);
-    context.fillRect(boxTrans.position.getX(), boxTrans.position.getY(), 100, 100);
+    boxRenderer.draw(box);
 }
 
-function end(fps, panic) 
+function end(fps, panic)
 {
-    debug.log(fps);
+    //debug.log(fps);
 }
 
 MainLoop.setMaxAllowedFPS(60);
@@ -588,3 +661,6 @@ MainLoop.setUpdate(update);
 MainLoop.setDraw(draw);
 MainLoop.setEnd(end);
 MainLoop.start();
+
+window.onload = start;
+document.onload = awake;
