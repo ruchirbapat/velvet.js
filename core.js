@@ -541,6 +541,15 @@ var renderer = function(renderShape = primitives.SQUARE)
     }
 }
 
+//Allows user to get input
+const input =
+{
+    mousePosition: function()
+    {
+
+    }
+}
+
 var gameObject = function(newName = "GameObject")
 {
     this.components = [];
@@ -591,20 +600,10 @@ var gameObject = function(newName = "GameObject")
 var canvas = document.getElementById("canvas"),
     context = canvas.getContext('2d');
 
-const gameSize = new vector(640, 480);
+const gameSize = new vector(canvas.offsetWidth, canvas.offsetHeight);
 
 canvas.width = gameSize.getX();
 canvas.height = gameSize.getY();
-
-var timer = 0;
-var bounce = false;
-
-var changeSpeed = 3000;
-const startingCol = new colour(255, 255, 255);
-var endingCol = new colour(70, 255, 200);
-
-const startingPos = new vector(0, 0);
-var endingPos = new vector(200, 200);
 
 var box;
 var boxTransform;
@@ -616,6 +615,7 @@ function start()
 {
     //Setup Gameobject to have a renderer and named 'BOX'
     box = new gameObject("Box");
+
     box.addComponent(new renderer(primitives.SQUARE));
 
     //Set variables
@@ -623,30 +623,17 @@ function start()
     boxRenderer = box.getComponent(renderer);
 
     //Set properties of components
-    boxTransform.scale = new vector(25, 25);
+    boxRenderer.colour = new colour(50, 200, 210);
+    boxTransform.scale = new vector(100, 100);
 }
 
 function update(delta)
 {
-    //Lerp position and colour
-    boxTransform.position = vecMath.lerp(startingPos, endingPos, timer);
-    boxRenderer.colour = colourMath.colourLerp(startingCol, endingCol, timer);
-
-    //Determine bounce back of lerp
-    timer += (delta / changeSpeed);
-
-    if (timer > 1)
-    {
-        timer = 0;
-
-        endingPos = vecMath.random(new vector(100, 100), new vector(300, 300));
-        endingCol = colourMath.random();
-    }
 }
 
 function draw(interpolation)
 {
-    //context.clearRect(0, 0, gameSize.getX(), gameSize.getY());
+    context.clearRect(0, 0, gameSize.getX(), gameSize.getY());
     boxRenderer.draw(box);
 }
 
