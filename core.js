@@ -591,18 +591,20 @@ var gameObject = function(newName = "GameObject")
 var canvas = document.getElementById("canvas"),
     context = canvas.getContext('2d');
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+const gameSize = new vector(640, 480);
+
+canvas.width = gameSize.getX();
+canvas.height = gameSize.getY();
 
 var timer = 0;
 var bounce = false;
 
-const changeSpeed = 1000;
+var changeSpeed = 3000;
 const startingCol = new colour(255, 255, 255);
 var endingCol = new colour(70, 255, 200);
 
 const startingPos = new vector(0, 0);
-var endingPos = new vector(50, 50);
+var endingPos = new vector(200, 200);
 
 var box;
 var boxTransform;
@@ -621,7 +623,7 @@ function start()
     boxRenderer = box.getComponent(renderer);
 
     //Set properties of components
-    boxTransform.scale = new vector(100, 100);
+    boxTransform.scale = new vector(25, 25);
 }
 
 function update(delta)
@@ -631,29 +633,26 @@ function update(delta)
     boxRenderer.colour = colourMath.colourLerp(startingCol, endingCol, timer);
 
     //Determine bounce back of lerp
-    var coeffecient = bounce !== true ? 1 : -1;
-    timer += (delta / changeSpeed) * coeffecient;
+    timer += (delta / changeSpeed);
 
-    if (timer < 0)
+    if (timer > 1)
     {
-        bounce = false;
+        timer = 0;
 
-        endingPos = vecMath.random(new vector(25, 25), new vector(75, 75));
+        endingPos = vecMath.random(new vector(100, 100), new vector(300, 300));
         endingCol = colourMath.random();
     }
-
-    if (timer > 1) bounce = true;
 }
 
 function draw(interpolation)
 {
-    context.clearRect(0, 0, 640, 480);
+    //context.clearRect(0, 0, gameSize.getX(), gameSize.getY());
     boxRenderer.draw(box);
 }
 
 function end(fps, panic)
 {
-    //debug.log(fps);
+    if(panic) MainLoop.resetFrameDelta();
 }
 
 MainLoop.setMaxAllowedFPS(60);
