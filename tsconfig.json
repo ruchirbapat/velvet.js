@@ -1,0 +1,39 @@
+{
+    "compileOnSave": true,
+    
+    "compilerOptions": 
+    {
+        "module": "system",
+        "target": "es5",
+        "noImplicitAny": false,
+        "sourceMap": false,
+        "outFile": "compiled/script.js",
+        "watch": true
+    },
+
+    "files": 
+    [
+        //Helper classes
+        "helper/debug.ts",
+        "helper/mathf.ts",
+        "helper/rand.ts",
+        "helper/vector.ts",
+        
+        //Core program
+        "core/time.ts",
+        "core/colour.ts",
+        "core/input.ts",
+
+        //Game object components
+        "core/components/component.ts",
+        "core/components/transform.ts",
+        "core/components/shapes.ts",
+        
+        //Game objects
+        "core/gameobject.ts",
+        "core/renderer.ts",
+        
+        //A demo of the above (^-^)
+        "core/manager.ts"
+    ]
+}
