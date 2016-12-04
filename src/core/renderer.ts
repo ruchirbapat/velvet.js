@@ -48,7 +48,7 @@ class Renderer
     public SetStrokeColour(colour : Colour) : void { this._context.strokeStyle = colour.GetStyle(); }
     
     public Clear() : void { this._context.clearRect(0, 0, this.width, this.height); }
-
+    
     //Shape drawing functions
     public SimpleDrawRect(position : Vector2, scale : Vector2, col : Colour = Colour.black, rot : number = 0) : void
     { 

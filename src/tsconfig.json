@@ -7,7 +7,7 @@
         "target": "es5",
         "noImplicitAny": false,
         "sourceMap": false,
-        "outFile": "compiled/script.js",
+        "outFile": "../build/script.js",
         "watch": true
     },
 
@@ -25,16 +25,15 @@
         "core/input.ts",
 
         //Game object components
-        "core/components/component.ts",
-        "core/components/transform.ts",
-        "core/components/shapes.ts",
+        "components/component.ts",
+        "components/transform.ts",
+        "components/shapes.ts",
         
         //Game objects
         "core/gameobject.ts",
-        "core/renderer.ts",
+        "core/renderer.ts"
         
         //A demo of the above (^-^)
-        "demo/platformer.ts"
-        //"demo/tds.ts"
+        //Compiled version has been placed in .html file
     ]
 }
