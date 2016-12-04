@@ -3,15 +3,15 @@
 
 ---
 
-*Velvet.js is a typesciprt boilerplate that allows for the easier creation of games for the web. Being powered by Typescript 2.0 meant that velvet.js has a solid object oriented backbone.*
+*Velvet.js is a typescript boilerplate that allows for the easier creation of games for the web. Being powered by Typescript 2.0 meant that velvet.js has a solid object oriented backbone.*
 
 Currently supported features:
 
-1. Rendering that doesnt suck
+1. Rendering that doesn't suck
 2. Colours that make sense - not more '#FFF'
-3. Time managment - no more worrying about different frame rates
+3. Time management - no more worrying about different frame rates
 4. Input manager - key events that make game programming simpler
-5. Maths - maths functions speicifc to graphics
+5. Maths - maths functions specific to graphics
 6. Debugging - Extensive debugging past the traditional console
 7. Random number generation
 
@@ -97,11 +97,11 @@ Time.AddAwakeCallback(Awake); Time.AddUpdateCallback(Update); Time.AddLateUpdate
 > How is this possible? Typescript, just typescript!
 
 In closing:
-*Any project, big or small, will benafit from using velvet js - as it does the heavy lifting so you can focus on what really matters.*
+*Any project, big or small, will benefit from using velvet js - as it does the heavy lifting so you can focus on what really matters.*
 
 ---
 
-The project employes the following naming convention:
+The project employs the following naming convention:
 - Classes and functions use camel casing starting with a capital : "ExampleClass", "ExampleFunction"
 - variables and member vars use camel casing : "exampleFloat", "anotherExample"
 - Private of protected properties begin with an underscore : "_privateVariable", "_PrivateMethod"
