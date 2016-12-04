@@ -1,26 +1,12 @@
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Have a class that defined a 2D point
-        - Centralise vector mathematics into static functions
-        - Continas definitions for commonly used vectors
-*/
-
-//This is a class that can be used to make 2D calculations easier
+//Holds a point in 2D space
 class Vector2
 {
-    //This is a 2D Engine
     public x : number;
     public y : number;
 
-    //Constructor will set properties
     constructor(x : number, y : number) { this.x = x; this.y = y; }
 
-    //Public functions that are non static
+    public ToString() : string              { return Vector2.ToString(this); } //For debugging purposes
     public ArrayRef(index : number) : number{ return (index == 0)? this.x : this.y; } //Will take an index and return either the x or y component
     public SqrMagnitude() : number          { return (this.x * this.x) + (this.y * this.y); } //Will find the square length of a vector from the origin
     public Magnitude() : number             { return Mathf.Sqrt(this.SqrMagnitude()); } //Will find the lenght of a vector from the origin
@@ -65,18 +51,9 @@ class Vector2
     public static RoundInt(vec : Vector2) : Vector2 { return new Vector2(vec.x, vec.y); }
     public static Random() : Vector2 { return new Vector2(Rand.Value(), Rand.Value()); }
 
-    //This will find the reflection of a vector based on a normal provided:
-    //  V  N   R
-    //  \  |  /
-    //   \ | /
-    //    \|/
-    //  -------
-    // V = The input (of velocity) vector
-    // N = The normal (needs to be a unit vector)
-    // R = Result of the function
+    //This will find the reflection of a vector based on a normal provided
     public static Reflect(velocity : Vector2, normal : Vector2) : Vector2
     {
-        //Using the formula
         //R = -2*(V dot N)*N + V
         return Vector2.Add(Vector2.Mul(-2 * Vector2.Dot(velocity, normal), normal), velocity);
     }
@@ -89,16 +66,13 @@ class Vector2
 
     private static _Operation(li : any, operator : any) //'operator' should be from one of the above functions
     {
-        //Stores the result of the calculation
         var result = (li[0] instanceof Vector2) ? li[0].Clone() : new Vector2(li[0], li[0]);
 
         //Allows for infinte arguments to be parsed
-        //Check the type, then apply to the result
         for(var i = 1; i < li.length; i++) {
             if(li[i] instanceof Vector2) { result.x = operator(result.x, li[i].x); result.y = operator(result.y, li[i].y); }
             else                         { result.x = operator(result.x, li[i]);   result.y = operator(result.y, li[i]); } }
 
-        //Done
         return result;
     }
     
@@ -108,7 +82,6 @@ class Vector2
     public static Mul(...args : any[]) : Vector2 { return this._Operation(args, Vector2._MulOperator); }
     public static Div(...args : any[]) : Vector2 { return this._Operation(args, Vector2._DivOperator); }
 
-    //Misc overloading
     public static ToString(val : Vector2)                : string { return val.x + " " + val.y; }
     public static Equal(a : Vector2, b : Vector2)       : boolean { return (Mathf.Approximatly(a.x, b.x) && Mathf.Approximatly(a.y, b.y)); }
     public static NotEqual(a : Vector2, b : Vector2)    : boolean { return (!Mathf.Approximatly(a.x, b.x) || !Mathf.Approximatly(a.y, b.y)); }

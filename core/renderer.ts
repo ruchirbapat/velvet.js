@@ -1,14 +1,3 @@
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Allow for shape and sprite drawing
-        - Create a layer of abstraction around the JS canvas
-*/
-
 //This contains a renderer class - the renderer is responsible for:
 // - Controlling all canvas operations
 // - Asset loading
@@ -24,6 +13,9 @@ class Renderer
     //Actual low level canvas
     private _canvas : HTMLCanvasElement = null; //The canvas elemnt
     private _context : any = null; //The canvas 2D context
+    
+    //Stores a stack of all gameobjects that are yet to be rendererd
+    private _drawStack : Array<GameObject> = new Array() as Array<GameObject>;
     
     //Drawing properties
     private _backgroundColour : Colour = new Colour(255, 255, 255);
@@ -43,24 +35,90 @@ class Renderer
         
         //Add to the page
         document.body.appendChild(this._canvas);
+        
+        //Set the current display object
+        Display = this;
+
+        //Add timer
+        this._drawStack = new Array() as Array<GameObject>;
     }
     
-    
     //Drawing wrapper functions
-    public SetColour(colour : Colour) : void { this._context.fillStyle = colour.GetStyle(); }
+    public SetFillColour(colour : Colour)   : void { this._context.fillStyle = colour.GetStyle(); }
+    public SetStrokeColour(colour : Colour) : void { this._context.strokeStyle = colour.GetStyle(); }
     
     public Clear() : void { this._context.clearRect(0, 0, this.width, this.height); }
 
     //Shape drawing functions
-    public DrawRect(position : Vector2, scale : Vector2, col : Colour = Colour.black) 
+    public SimpleDrawRect(position : Vector2, scale : Vector2, col : Colour = Colour.black, rot : number = 0) : void
     { 
-        this.SetColour(col); 
-        this._context.fillRect(position.x, position.y, scale.x, scale.y); 
+        //Save canvas context state
+        this._context.save();
+        this._context.translate(position.x, position.y);
+        this._context.rotate(rot * Mathf.degToRad);
+        //this._context.scale(scale..x, scale.y);
+    
+        //Draw
+        this.SetFillColour(col);
+        this._context.fillRect(-(scale.x / 2), -(scale.y / 2), scale.x, scale.y);
+        
+        //Done
+        this._context.restore();
+    }
+    
+    public SimpleStrokeRect(position : Vector2, scale : Vector2, col : Colour = Colour.black, rot : number = 0) : void
+    { 
+        //Save canvas context state
+        this._context.save();
+        this._context.translate(position.x, position.y);
+        this._context.rotate(rot * Mathf.degToRad);
+        //this._context.scale(scale..x, scale.y);
+    
+        //Draw
+        this.SetStrokeColour(col);
+        this._context.strokeRect(-(scale.x / 2), -(scale.y / 2), scale.x, scale.y);
+        
+        //Done
+        this._context.restore();
+    }
+    
+    private DrawRect(rect : Rectangle, trans : Transform = new Transform()) : void
+    {
+                           this.SimpleDrawRect  (trans.position, Vector2.Mul(trans.scale, rect.size), rect.fillColour, trans.rotation);
+        if (rect.stroke) { this.SimpleStrokeRect(trans.position, Vector2.Mul(trans.scale, rect.size), rect.strokeColour); }
+    }
+    
+    //Actual main drawing routine
+    //Will account for the shape later
+    protected Draw(obj : GameObject) : void { this.DrawRect(obj.renderer, obj.transform); }
+
+    //Handles interaction with the draw stack
+    public AddGameObject(g: GameObject): void { this._drawStack.unshift(g); }
+
+    //This function will be called every frame by the time class
+    //Handles poping of the draw stack
+    public Update(): void
+    {
+        //Loop though the stack
+        let stackLength: number = this._drawStack.length;
+
+        while (stackLength > 0)
+        {
+            //Pop from the back of the stack
+            let current: GameObject = this._drawStack.pop();
+
+            //Drawing routine is temporary
+            this.Draw(current);
+            
+            //Increment
+            stackLength -= 1;
+        }
     }
     
     //Getters and setters
     public get width()  : number { return this._width; }
     public get height() : number { return this._height;}
+    public get canvas() : HTMLCanvasElement { return this._canvas; }
     public get backgroundColour() : Colour { return this._backgroundColour;}
     
     public set width(w : number) { this._width = w; this._canvas.width = this._width; }
@@ -72,4 +130,4 @@ class Renderer
 }
 
 //Create a default one for static use, this allows for multiple renderers
-let Display : Renderer = new Renderer();
+let Display: Renderer = new Renderer();

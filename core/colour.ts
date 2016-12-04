@@ -1,28 +1,15 @@
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Hold RGBA colours in one structure
-        - Convert colours into CSS for use of the canvas
-*/
-
 //Converts RGBA color into css colour
 class Colour
 {
     //Public have custom getters and setters and so they are treated as private
-    private _red : number //Red channel;
-    private _green : number; //Green channel
-    private _blue : number; //Blue channel
+    private _red : number
+    private _green : number;
+    private _blue : number;
     private _alpha : number; //Transparency
     
     //This will store the current css string, this will be usde by the canvas style
-    //Holds the formatted CSS rgba string
     private _CssString : string = 'rgba()';
     
-    //This will create a css string
     private _CalculateLetters() : void 
     { 
         this._CssString = 'rgba(' + 
@@ -32,10 +19,8 @@ class Colour
             Mathf.Bounce01(this._alpha / 255) +  ')'; 
     }
     
-    //The properties need a getter and setter, since the CSS strings will need to recalculate
     public GetStyle() : string { return this._CssString; }
     
-    //Setters and getters need custom recalculation behaviour
     public set red(r : number)   { this._red = Mathf.Floor(r);   this._CalculateLetters(); }
     public set green(g : number) { this._green = Mathf.Floor(g); this._CalculateLetters(); }
     public set blue(b : number)  { this._blue = Mathf.Floor(b);  this._CalculateLetters(); }
@@ -46,7 +31,6 @@ class Colour
     public get blue()  : number { return this._blue; }
     public get alpha() : number { return this._alpha; }
     
-    //Public function to set the colour in one go
     public Set(r : number, g : number, b : number, a : number = null) : void
     { 
         this.red = r;
@@ -71,7 +55,6 @@ class Colour
         }
     }
     
-    //Constructor will set the value based on params
     constructor(r : number, g : number, b : number, a : number = 255) { this.Set(r, g, b, a); }
 
     //Default constant colour values

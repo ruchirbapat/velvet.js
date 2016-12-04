@@ -1,18 +1,4 @@
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Get keyboard input
-        - Get mouse input
-        - Ignore browser events
-*/
-
-//This is a static classe used to get input:
-// - Keyboard input
-// - Mouse input
+//This is a static classe used to get input from the keyboard and mouse
 namespace Input
 {
     //Holds an array of key data
@@ -33,10 +19,13 @@ namespace Input
     export function GetMouseUp(keyCode : number) : boolean { return _mouseReleaseData[keyCode]; }; //Key up input check
     export function GetMouseDown(keyCode : number) : boolean { return _mouseDownData[keyCode]; }; //Key down input check
 
-    //Holds the position of the mouse
     let _mousePosition : Vector2 = new Vector2(0, 0);    
 
-    export function GetMousePosition() : Vector2 { return _mousePosition; }
+    export function GetMousePosition(disp : Renderer) : Vector2 
+    { 
+        let rect : any = disp.canvas.getBoundingClientRect();
+        return new Vector2(_mousePosition.x - rect.left, _mousePosition.y - rect.top);
+    }
 
     //Holds the input movement axis
     let _axis : Vector2 = new Vector2(0, 0);
@@ -55,7 +44,6 @@ namespace Input
 
     function _CallbackUpdate() : void 
     {
-        //Reset 
         _keyDownData = [ ]; _keyReleaseData = [ ]; _mouseDownData = [ ]; _mouseReleaseData = [ ]; 
 
         //Needs to calculate the movement axis
@@ -86,7 +74,7 @@ namespace Input
 
     Time.AddLateUpdateCallback(_CallbackUpdate); //Needs to subscribe to late update
 
-    //Defines all javascript key codes - not fully done
+    //Defines all javascript key codes
     export let KeyCode = 
     {
         mousemiddle : 1,

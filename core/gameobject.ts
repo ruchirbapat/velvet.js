@@ -1,9 +1,12 @@
-
 //A gameobjecty should work via a component system.
-//Where certain componets can be added
-class GameObject
+class GameObject// extends SceneNode
 {
     //Components will be added and removed from the gameobject dynamically
     //For now they are defined manually
-    //public transform : Transform = new Transform();
+    public transform : Transform = new Transform();
+    public renderer : Rectangle = new Rectangle();
+    
+    //Blank
+    //constructor() { } { super(); }
+    //Update() : void { super.Update(); Display.AddGameObject(this); }
 }

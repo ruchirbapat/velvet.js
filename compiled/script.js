@@ -3,31 +3,19 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Wrap around JS console functions
-        - Easier colour managment in the console
-*/
-//Wrapper (static) class for now that wraps around the built in console operations
+//Wrapper class for the built in javasciprt console
 var Debug;
 (function (Debug) {
-    //Properties when logging
+    //Change visual attributes
     Debug.backgroundColour = 'white';
-    //Holds the current debug string
+    //Create CSS Style info for the text
     function GenerateDebugFormatting() {
-        //Create CSS Style info for the text
         return 'color: ' + Debug.textColour + ';' +
             'font-size: ' + Debug.fontSize + ';' +
             'background: ' + Debug.backgroundColour + ';';
     }
     Debug.GenerateDebugFormatting = GenerateDebugFormatting;
     ;
-    //Will reset the formatting properties
     function ResetFormatting() {
         //Revert back to defualt values
         Debug.backgroundColour = 'white';
@@ -36,59 +24,45 @@ var Debug;
     }
     Debug.ResetFormatting = ResetFormatting;
     ;
-    //Wrappers that add some functionality
     function RawLog(data) { console.log(data); }
     Debug.RawLog = RawLog;
-    ; //Will print the param with console log directly, this is good for pritinf objects
+    ;
     function Log(text) { console.log('%c' + text, Debug.GenerateDebugFormatting()); }
     Debug.Log = Log;
-    ; //Prints using the current debug formatting
+    ;
     function Warning(text) { console.warn('%c' + text, Debug.GenerateDebugFormatting()); }
     Debug.Warning = Warning;
-    ; //Prints using the current debug formatting in warning format
+    ;
     function Error(text) { console.error('%c' + text, Debug.GenerateDebugFormatting()); }
     Debug.Error = Error;
-    ; //Prints using the current debug formatting in error format
+    ;
     function Info(text) { console.info('%c' + text, Debug.GenerateDebugFormatting()); }
     Debug.Info = Info;
-    ; //Prints using the current debug formatting in info format
+    ;
     function Clear() { console.clear(); }
     Debug.Clear = Clear;
-    ; //Removes all data from the console
+    ;
     function Spacer() { Debug.Log("\n"); }
     Debug.Spacer = Spacer;
-    ; //Creates a blank space in the console, good for organising data
+    ;
     function EndGroup() { console.groupEnd(); }
     Debug.EndGroup = EndGroup;
-    ; //Will end the current group (like a tree structure)
+    ;
     function CreateGroup(name) { console.group(name); }
     Debug.CreateGroup = CreateGroup;
-    ; //Will create the beggining of a group (like a tree structure)
+    ;
 })(Debug || (Debug = {}));
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Wrap around already exisiting JS math fuctions
-        - Add math functions specific to game programming
-        - Define mathematical constants
-*/
 //A math class to make mathematic operations easier and more relivant to game programming
-//And to standardize function calls.
 var Mathf;
 (function (Mathf) {
-    /* ----- Constant values ----- */
-    Mathf.pi = 3.1415926; //The ratio of the circumference to the perimeter of a circle
-    Mathf.tau = 6.2831852; //Double PI, this will make certain operations faster
-    Mathf.rounding = 0.005; //This is used as an epsilon value when comparing floats
-    Mathf.infinite = Infinity; //Exactly what it sounds like.
-    Mathf.radToDeg = 360 / Mathf.tau; //For converting radians to degrees
-    Mathf.degToRad = (Mathf.pi * 2) / 360; //For converting degrees to radians 
-    /* ----- Wrapper functions to overlay built in JS math functions ----- */
-    //General
+    //Consts
+    Mathf.pi = 3.1415926;
+    Mathf.tau = 6.2831852;
+    Mathf.rounding = 0.005; //Epsilon
+    Mathf.infinite = Infinity;
+    Mathf.radToDeg = 360 / Mathf.tau;
+    Mathf.degToRad = (Mathf.pi * 2) / 360;
+    //Default javasciprt wrapper functions
     function Abs(f) { return Math.abs(f); }
     Mathf.Abs = Abs;
     ; //The absolute value of 'foo' (makes it posative)
@@ -101,7 +75,6 @@ var Mathf;
     function Pow(f, pow) { return Math.pow(f, pow); }
     Mathf.Pow = Pow;
     ; //'f' to the power of 'pow' 
-    //Trig
     function Cos(f) { return Math.cos(f); }
     Mathf.Cos = Cos;
     ;
@@ -123,7 +96,6 @@ var Mathf;
     function Atan2(f, b) { return Math.atan2(f, b); }
     Mathf.Atan2 = Atan2;
     ;
-    //Rounding
     function Ceil(f) { return Math.ceil(f); }
     Mathf.Ceil = Ceil;
     ;
@@ -139,8 +111,6 @@ var Mathf;
     function Min(f, b) { return Math.min(f, b); }
     Mathf.Min = Min;
     ;
-    /* ----- Useful functions ----- */
-    //Logarithmics...
     function Log(f) { return Math.log(f); }
     Mathf.Log = Log;
     ; //For the natural log of 'f'
@@ -153,64 +123,48 @@ var Mathf;
     function Logbase(f, base) { return Math.log(f) / Math.log(base); }
     Mathf.Logbase = Logbase;
     ; //The 'base' log of 'f'
-    //Allows for the modulus operation on floats (decimals)
+    //Modulus but on floats
     function Mod(num, div) { return div * ((num / div) - Mathf.Floor(num / div)); }
     Mathf.Mod = Mod;
     ;
     //Returns a number that has forced 'value' inbetween 'minimum' and 'maximum'
     function Clamp(value, minimum, maximum) {
-        //Combine the maximum and mimumm functions to achive this
         return Mathf.Max(minimum, Mathf.Min(value, maximum));
     }
     Mathf.Clamp = Clamp;
     ;
-    //Clamps 'value' between 0 and 1
     function Clamp01(value) { return Mathf.Clamp(value, 0.0, 1.0); }
     Mathf.Clamp01 = Clamp01;
     ;
     //Linearly interpolate 't' between two floats ('a' and 'b')
     function LerpUnclamped(a, b, t) {
-        //Just use equation from:
-        //(1 - t) * v0 + t * v1
         //https://devblogs.nvidia.com/parallelforall/lerp-faster-cuda/
         return (1 - t) * a + t * b;
     }
     Mathf.LerpUnclamped = LerpUnclamped;
     ;
-    //A lerp where 't' cannot exceed 'b' and go below 'a'
     function Lerp(a, b, t) { return Mathf.LerpUnclamped(a, b, Mathf.Clamp01(t)); }
     Mathf.Lerp = Lerp;
     ;
-    //Smoothdamp, much like lerp interpolates between values
-    //But smoothing (much like a broad cubic function)
-    //Apply the equation:
-    //fn(x) = 3x^2 - 2x^3
-    //This is in the form of a wuatratic equation
-    //Source: https://en.wikipedia.org/wiki/Smoothstep
-    // http://http.developer.nvidia.com/Cg/smoothstep.html
+    //Smoothdamp, much like lerp interpolates between values but with smoothing (much like a broad cubic function)
     function SmoothStep(left, right, x) {
-        //Clamp the value
         x = Mathf.Clamp01((x - left) / (right - left));
         //Evaluate quadratic
         return x * x * (3.0 - 2.0 * x);
     }
     Mathf.SmoothStep = SmoothStep;
     ;
-    //Default values for left and right are used
     function SmoothStep01(x) { return Mathf.SmoothStep(0.0, 1.0, x); }
     Mathf.SmoothStep01 = SmoothStep01;
     ;
-    //Similar to SmoothStep but with the equation:
-    //6x^5 - 15x^4 + 10x^3
+    //Similar to SmoothStep but with the equation: 6x^5 - 15x^4 + 10x^3
     function SmootherStep(left, right, x) {
-        //Scale and clamp
         var nx = Mathf.Clamp01((x - left) / (right - left));
         //Evaluate
         return nx * nx * nx * (nx * (nx * 6 - 15) + 10);
     }
     Mathf.SmootherStep = SmootherStep;
     ;
-    //Default values for left and right are used
     function SmootherStep01(x) { return Mathf.SmootherStep(0.0, 1.0, x); }
     Mathf.SmootherStep01 = SmootherStep01;
     ;
@@ -221,15 +175,13 @@ var Mathf;
     ;
     //Like lerping but the 'delta' will never exceed a delta, and an addative method is used
     function MoveTowards(current, target, delta) {
-        //Make sure distance is less than delta
         if (Mathf.Abs(target - current) <= delta)
             return target;
-        //Otherwise apply a lerp
         return current + Mathf.Sign(target - current) * delta;
     }
     Mathf.MoveTowards = MoveTowards;
     ;
-    //Like movetowards but it corrects for angles around 360 and 0.
+    //Corrects for angles around 360 and 0.
     function MoveTowardsAngle(current, target, delta) {
         target = current + Mathf.DeltaAngle(current, target);
         return Mathf.MoveTowards(current, target, delta);
@@ -237,7 +189,6 @@ var Mathf;
     Mathf.MoveTowardsAngle = MoveTowardsAngle;
     ;
     //Will bounce 'value' between 'min' and 'max'. 
-    //Like clamping but once the max value is exceeded the result will start to move down and vise versa.  
     function Bounce(value, min, max) {
         var range = max - min;
         var state = Mathf.Mod(value - min, 2 * range);
@@ -247,34 +198,25 @@ var Mathf;
     }
     Mathf.Bounce = Bounce;
     ;
-    //Overloading the bounce function
     function Bounce0(value, max) { return Mathf.Bounce(value, 0.0, max); }
     Mathf.Bounce0 = Bounce0;
     ;
     function Bounce01(value) { return Mathf.Bounce(value, 0.0, 1.0); }
     Mathf.Bounce01 = Bounce01;
     ;
-    //This will find the percentage through a lerp based on paramters
-    //Inverse lerp - not done
-    //Find the the closest difference between two angles
-    //So this value may never exceed 180 degrees
-    //Warning slow..
+    //Inverse lerp This will find the percentage through a lerp based on paramters - not done
+    //Find the the closest difference between two angles so this value may never exceed 180 degrees
     function DeltaAngle(current, target) {
-        //FInd difference
         var diff = target - current;
-        //Adjust signs
         while (diff < -180)
             diff += 360;
         while (diff > 180)
             diff -= 360;
-        //Done
         return diff;
     }
     Mathf.DeltaAngle = DeltaAngle;
     ;
-    //Find the value as a power of two
     function ClosestBinaryPower(value) {
-        //Needs	 the find the 2 root of the value then round that to an int
         return Mathf.Round(Mathf.Pow(Mathf.Round(Mathf.Sqrt(value)), 2));
     }
     Mathf.ClosestBinaryPower = ClosestBinaryPower;
@@ -284,62 +226,43 @@ var Mathf;
     ;
     //Find the highest value in an unsorted number array named 'arr'
     function MaxArray(arr) {
-        //Stores the best value
         var current_highest = 0;
-        //Go through and set based on max
         for (var i = 0; i < arr.length; i++) {
             if (arr[i] > current_highest || i == 0) {
                 current_highest = arr[i];
             }
         }
-        //Done
         return current_highest;
     }
     Mathf.MaxArray = MaxArray;
     ;
     //Find the lowest value in an unsorted number array named 'arr'
     function MinArray(arr) {
-        //Stores the best value
         var current_lowest = 0;
-        //Go through and set based on max
         for (var i = 0; i < arr.length; i++)
             if (arr[i] < current_lowest || i == 0) {
                 current_lowest = arr[i];
             }
-        //Done
         return current_lowest;
     }
     Mathf.MinArray = MinArray;
     ;
     //Because of slight round errors in floats, this should be used when comparing two values
-    //For example Sqrt(9) == 3 should return true, but it will return false because of rounding errors
     function Approximatly(a, b, round) {
         if (round === void 0) { round = Mathf.rounding; }
         return Mathf.Abs(a - b) < round;
     }
     Mathf.Approximatly = Approximatly;
 })(Mathf || (Mathf = {}));
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Make random number generation more convenient
-*/
 //For easy random number generation
 var Rand;
 (function (Rand) {
-    //Random number between 'min' and 'max'
     function Range(min, max) { return (Math.random() * (max - min)) + min; }
     Rand.Range = Range;
     ;
-    //Generates a random number between 0 and 1
     function Value() { return Math.random(); }
     Rand.Value = Value;
     ;
-    //Generate a random integer 
     function RandBin() { return Rand.RandInt(0, 2); }
     Rand.RandBin = RandBin;
     ;
@@ -347,25 +270,13 @@ var Rand;
     Rand.RandInt = RandInt;
     ;
 })(Rand || (Rand = {}));
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Have a class that defined a 2D point
-        - Centralise vector mathematics into static functions
-        - Continas definitions for commonly used vectors
-*/
-//This is a class that can be used to make 2D calculations easier
+//Holds a point in 2D space
 var Vector2 = (function () {
-    //Constructor will set properties
     function Vector2(x, y) {
         this.x = x;
         this.y = y;
     }
-    //Public functions that are non static
+    Vector2.prototype.ToString = function () { return Vector2.ToString(this); }; //For debugging purposes
     Vector2.prototype.ArrayRef = function (index) { return (index == 0) ? this.x : this.y; }; //Will take an index and return either the x or y component
     Vector2.prototype.SqrMagnitude = function () { return (this.x * this.x) + (this.y * this.y); }; //Will find the square length of a vector from the origin
     Vector2.prototype.Magnitude = function () { return Mathf.Sqrt(this.SqrMagnitude()); }; //Will find the lenght of a vector from the origin
@@ -395,17 +306,8 @@ var Vector2 = (function () {
     //Helpful static functions
     Vector2.RoundInt = function (vec) { return new Vector2(vec.x, vec.y); };
     Vector2.Random = function () { return new Vector2(Rand.Value(), Rand.Value()); };
-    //This will find the reflection of a vector based on a normal provided:
-    //  V  N   R
-    //  \  |  /
-    //   \ | /
-    //    \|/
-    //  -------
-    // V = The input (of velocity) vector
-    // N = The normal (needs to be a unit vector)
-    // R = Result of the function
+    //This will find the reflection of a vector based on a normal provided
     Vector2.Reflect = function (velocity, normal) {
-        //Using the formula
         //R = -2*(V dot N)*N + V
         return Vector2.Add(Vector2.Mul(-2 * Vector2.Dot(velocity, normal), normal), velocity);
     };
@@ -415,10 +317,8 @@ var Vector2 = (function () {
     Vector2._MulOperator = function (result, val) { return result *= val; };
     Vector2._DivOperator = function (result, val) { return result /= val; };
     Vector2._Operation = function (li, operator) {
-        //Stores the result of the calculation
         var result = (li[0] instanceof Vector2) ? li[0].Clone() : new Vector2(li[0], li[0]);
         //Allows for infinte arguments to be parsed
-        //Check the type, then apply to the result
         for (var i = 1; i < li.length; i++) {
             if (li[i] instanceof Vector2) {
                 result.x = operator(result.x, li[i].x);
@@ -429,7 +329,6 @@ var Vector2 = (function () {
                 result.y = operator(result.y, li[i]);
             }
         }
-        //Done
         return result;
     };
     //Actual overloading
@@ -461,7 +360,6 @@ var Vector2 = (function () {
         }
         return this._Operation(args, Vector2._DivOperator);
     };
-    //Misc overloading
     Vector2.ToString = function (val) { return val.x + " " + val.y; };
     Vector2.Equal = function (a, b) { return (Mathf.Approximatly(a.x, b.x) && Mathf.Approximatly(a.y, b.y)); };
     Vector2.NotEqual = function (a, b) { return (!Mathf.Approximatly(a.x, b.x) || !Mathf.Approximatly(a.y, b.y)); };
@@ -475,22 +373,9 @@ var Vector2 = (function () {
     Vector2.down = new Vector2(0, -1);
     return Vector2;
 }());
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Handle the frame by frame calling of update function
-        - Create an ordered sequence of events for a program
-        - Manage different frame rates on differently performing devices
-*/
 //This class handles all of the timing related operations
-//Frame by frame updates
 var Time;
 (function (Time) {
-    //Properties of a time
     Time.delta = 0; //Difference in time between subsequent function calls
     Time.time = 0; //Counter since game began
     //Holds an array of call backs
@@ -517,62 +402,44 @@ var Time;
     ;
     //Called when the page loads
     function _Awake() {
-        //Call all callbacks
         for (var i = 0; i < _awakeCallbacks.length; i++) {
             _awakeCallbacks[i]();
         }
-        //Call the next subsequent function
         _Start();
     }
     ;
     //Called when the page and basic operations have been formed
     function _Start() {
-        //Call all callbacks
         for (var i = 0; i < _startCallbacks.length; i++) {
             _startCallbacks[i]();
         }
-        //Call the next subsequent function
         requestAnimationFrame(_Update);
     }
     ;
     function _EarlyUpdate() { for (var i = 0; i < _earlyCallbacks.length; i++) {
         _updateCallbacks[i]();
     } _Update(); }
-    ; //The actual update function calls
+    ;
     function _Update() { for (var i = 0; i < _updateCallbacks.length; i++) {
         _updateCallbacks[i]();
     } _LateUpdate(); }
-    ; //The actual update function calls
+    ;
     function _LateUpdate() { for (var i = 0; i < _lateCallbacks.length; i++) {
         _lateCallbacks[i]();
     } requestAnimationFrame(_EarlyUpdate); }
-    ; //Called at the very end of an update cycle
+    ;
     //Needs to find delta time ect.
     Time.AddLateUpdateCallback(function () { Time.time += 1.0; });
-    //Event listeners
     window.addEventListener("load", _Awake);
 })(Time || (Time = {}));
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Hold RGBA colours in one structure
-        - Convert colours into CSS for use of the canvas
-*/
 //Converts RGBA color into css colour
 var Colour = (function () {
-    //Constructor will set the value based on params
     function Colour(r, g, b, a) {
         if (a === void 0) { a = 255; }
         //This will store the current css string, this will be usde by the canvas style
-        //Holds the formatted CSS rgba string
         this._CssString = 'rgba()';
         this.Set(r, g, b, a);
     }
-    //This will create a css string
     Colour.prototype._CalculateLetters = function () {
         this._CssString = 'rgba(' +
             Mathf.Bounce(this._red, 0, 256) + ',' +
@@ -580,11 +447,9 @@ var Colour = (function () {
             Mathf.Bounce(this._blue, 0, 256) + ',' +
             Mathf.Bounce01(this._alpha / 255) + ')';
     };
-    //The properties need a getter and setter, since the CSS strings will need to recalculate
     Colour.prototype.GetStyle = function () { return this._CssString; };
     Object.defineProperty(Colour.prototype, "red", {
         get: function () { return this._red; },
-        //Setters and getters need custom recalculation behaviour
         set: function (r) { this._red = Mathf.Floor(r); this._CalculateLetters(); },
         enumerable: true,
         configurable: true
@@ -607,7 +472,6 @@ var Colour = (function () {
         enumerable: true,
         configurable: true
     });
-    //Public function to set the colour in one go
     Colour.prototype.Set = function (r, g, b, a) {
         if (a === void 0) { a = null; }
         this.red = r;
@@ -641,20 +505,7 @@ var Colour = (function () {
     Colour.grey = new Colour(128, 128, 128);
     return Colour;
 }());
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Get keyboard input
-        - Get mouse input
-        - Ignore browser events
-*/
-//This is a static classe used to get input:
-// - Keyboard input
-// - Mouse input
+//This is a static classe used to get input from the keyboard and mouse
 var Input;
 (function (Input) {
     //Holds an array of key data
@@ -683,9 +534,11 @@ var Input;
     function GetMouseDown(keyCode) { return _mouseDownData[keyCode]; }
     Input.GetMouseDown = GetMouseDown;
     ; //Key down input check
-    //Holds the position of the mouse
     var _mousePosition = new Vector2(0, 0);
-    function GetMousePosition() { return _mousePosition; }
+    function GetMousePosition(disp) {
+        var rect = disp.canvas.getBoundingClientRect();
+        return new Vector2(_mousePosition.x - rect.left, _mousePosition.y - rect.top);
+    }
     Input.GetMousePosition = GetMousePosition;
     //Holds the input movement axis
     var _axis = new Vector2(0, 0);
@@ -709,7 +562,6 @@ var Input;
     function _CallbackMouseUp(event) { _prevent(event); delete _mouseHeldData[event.button]; delete _mouseDownData[event.button]; _mouseReleaseData[event.button] = true; }
     ;
     function _CallbackUpdate() {
-        //Reset 
         _keyDownData = [];
         _keyReleaseData = [];
         _mouseDownData = [];
@@ -734,7 +586,7 @@ var Input;
     window.addEventListener("keydown", _CallbackKeyDown);
     window.addEventListener("keyup", _CallbackKeyUp);
     Time.AddLateUpdateCallback(_CallbackUpdate); //Needs to subscribe to late update
-    //Defines all javascript key codes - not fully done
+    //Defines all javascript key codes
     Input.KeyCode = {
         mousemiddle: 1,
         mouseright: 2,
@@ -802,44 +654,48 @@ var Component = (function () {
     }
     return Component;
 }());
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Create a scene graph style heirachy for all transforms
-*/
-//A transform reprents to positioning of a game object
+//A transform reprents to positioning of a gameobject
 var Transform = (function (_super) {
     __extends(Transform, _super);
     function Transform() {
-        _super.apply(this, arguments);
+        _super.call(this);
         //Currently all properties are public
+        this.position = new Vector2(0, 0);
+        this.scale = new Vector2(1, 1);
+        this.rotation = 0.0;
         this.position = new Vector2(0, 0);
         this.scale = new Vector2(1, 1);
         this.rotation = 0.0;
     }
     return Transform;
 }(Component));
-//A gameobjecty should work via a component system.
-//Where certain componets can be added
-var GameObject = (function () {
-    function GameObject() {
+;
+//A rederable shape
+var Rectangle = (function (_super) {
+    __extends(Rectangle, _super);
+    //Construct by default
+    function Rectangle() {
+        _super.call(this);
+        this.strokeColour = new Colour(255, 255, 255);
+        this.fillColour = new Colour(0, 0, 0);
+        this.size = new Vector2(10, 10);
+        this.stroke = false;
     }
-    return GameObject;
+    return Rectangle;
+}(Component));
+//A gameobjecty should work via a component system.
+var GameObject // extends SceneNode
+ = (function () {
+    function GameObject // extends SceneNode
+        () {
+        //Components will be added and removed from the gameobject dynamically
+        //For now they are defined manually
+        this.transform = new Transform();
+        this.renderer = new Rectangle();
+    }
+    return GameObject // extends SceneNode
+    ;
 }());
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Allow for shape and sprite drawing
-        - Create a layer of abstraction around the JS canvas
-*/
 //This contains a renderer class - the renderer is responsible for:
 // - Controlling all canvas operations
 // - Asset loading
@@ -853,6 +709,8 @@ var Renderer = (function () {
         //Actual low level canvas
         this._canvas = null; //The canvas elemnt
         this._context = null; //The canvas 2D context
+        //Stores a stack of all gameobjects that are yet to be rendererd
+        this._drawStack = new Array();
         //Drawing properties
         this._backgroundColour = new Colour(255, 255, 255);
     }
@@ -871,15 +729,69 @@ var Renderer = (function () {
         this.height = h;
         //Add to the page
         document.body.appendChild(this._canvas);
+        //Set the current display object
+        Display = this;
+        //Add timer
+        this._drawStack = new Array();
     };
     //Drawing wrapper functions
-    Renderer.prototype.SetColour = function (colour) { this._context.fillStyle = colour.GetStyle(); };
+    Renderer.prototype.SetFillColour = function (colour) { this._context.fillStyle = colour.GetStyle(); };
+    Renderer.prototype.SetStrokeColour = function (colour) { this._context.strokeStyle = colour.GetStyle(); };
     Renderer.prototype.Clear = function () { this._context.clearRect(0, 0, this.width, this.height); };
     //Shape drawing functions
-    Renderer.prototype.DrawRect = function (position, scale, col) {
+    Renderer.prototype.SimpleDrawRect = function (position, scale, col, rot) {
         if (col === void 0) { col = Colour.black; }
-        this.SetColour(col);
-        this._context.fillRect(position.x, position.y, scale.x, scale.y);
+        if (rot === void 0) { rot = 0; }
+        //Save canvas context state
+        this._context.save();
+        this._context.translate(position.x, position.y);
+        this._context.rotate(rot * Mathf.degToRad);
+        //this._context.scale(scale..x, scale.y);
+        //Draw
+        this.SetFillColour(col);
+        this._context.fillRect(-(scale.x / 2), -(scale.y / 2), scale.x, scale.y);
+        //Done
+        this._context.restore();
+    };
+    Renderer.prototype.SimpleStrokeRect = function (position, scale, col, rot) {
+        if (col === void 0) { col = Colour.black; }
+        if (rot === void 0) { rot = 0; }
+        //Save canvas context state
+        this._context.save();
+        this._context.translate(position.x, position.y);
+        this._context.rotate(rot * Mathf.degToRad);
+        //this._context.scale(scale..x, scale.y);
+        //Draw
+        this.SetStrokeColour(col);
+        this._context.strokeRect(-(scale.x / 2), -(scale.y / 2), scale.x, scale.y);
+        //Done
+        this._context.restore();
+    };
+    Renderer.prototype.DrawRect = function (rect, trans) {
+        if (trans === void 0) { trans = new Transform(); }
+        this.SimpleDrawRect(trans.position, Vector2.Mul(trans.scale, rect.size), rect.fillColour, trans.rotation);
+        if (rect.stroke) {
+            this.SimpleStrokeRect(trans.position, Vector2.Mul(trans.scale, rect.size), rect.strokeColour);
+        }
+    };
+    //Actual main drawing routine
+    //Will account for the shape later
+    Renderer.prototype.Draw = function (obj) { this.DrawRect(obj.renderer, obj.transform); };
+    //Handles interaction with the draw stack
+    Renderer.prototype.AddGameObject = function (g) { this._drawStack.unshift(g); };
+    //This function will be called every frame by the time class
+    //Handles poping of the draw stack
+    Renderer.prototype.Update = function () {
+        //Loop though the stack
+        var stackLength = this._drawStack.length;
+        while (stackLength > 0) {
+            //Pop from the back of the stack
+            var current = this._drawStack.pop();
+            //Drawing routine is temporary
+            this.Draw(current);
+            //Increment
+            stackLength -= 1;
+        }
     };
     Object.defineProperty(Renderer.prototype, "width", {
         //Getters and setters
@@ -891,6 +803,11 @@ var Renderer = (function () {
     Object.defineProperty(Renderer.prototype, "height", {
         get: function () { return this._height; },
         set: function (h) { this._height = h; this._canvas.height = this._height; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Renderer.prototype, "canvas", {
+        get: function () { return this._canvas; },
         enumerable: true,
         configurable: true
     });
@@ -906,47 +823,16 @@ var Renderer = (function () {
 }());
 //Create a default one for static use, this allows for multiple renderers
 var Display = new Renderer();
-/*
-    Copyright 2016 Cameron Bell - Obtuse Studios
-
-    This file is subject to the terms and conditions defined in
-    file 'license.txt', which is part of this source code package.
-
-    The specific goal of this file is to:
-        - Show a demo
-*/
-//This class represents any entity
-var Entity = (function () {
-    //Constructor uses optional params
-    function Entity(position, scale, colour) {
-        if (position === void 0) { position = new Vector2(0, 0); }
-        if (scale === void 0) { scale = new Vector2(10, 10); }
-        if (colour === void 0) { colour = Colour.black; }
-        this.position = position;
-        this.colour = colour;
-        this.scale = scale;
-    }
-    //Wrapper for DrawRect
-    Entity.prototype.Draw = function (r) {
-        if (r === void 0) { r = Display; }
-        r.DrawRect(this.position, this.scale, this.colour);
-    };
-    return Entity;
-}());
 var Player = (function (_super) {
     __extends(Player, _super);
-    //Call base constructor
-    function Player(position, scale, colour) {
-        if (position === void 0) { position = new Vector2(0, 0); }
-        if (scale === void 0) { scale = new Vector2(10, 10); }
-        if (colour === void 0) { colour = Colour.black; }
-        _super.call(this, position, scale, colour);
+    function Player() {
+        _super.call(this);
         //Public properties
         this.velocity = Vector2.zero;
         this.grounded = false;
     }
     return Player;
-}(Entity));
+}(GameObject));
 //Consts
 var Const = {
     GRAVITY: 1.0,
@@ -959,9 +845,10 @@ function Awake() {
     //Rendering
     Display.Create(800, 400);
     Display.backgroundColour = Colour.magenta;
-    player = new Player(new Vector2(400, 200));
-    player.scale = new Vector2(20, 20);
-    player.colour = Colour.white;
+    player = new Player();
+    player.transform.position = new Vector2(400, 200);
+    player.renderer.size = new Vector2(20, 20);
+    player.renderer.fillColour = Colour.white;
 }
 function Update() {
     Display.Clear();
@@ -973,29 +860,29 @@ function Update() {
         player.velocity.x += 1;
     }
     player.velocity.x *= Const.FRICTION;
-    //Gravity
     player.velocity.y += Const.GRAVITY;
-    //Jump check
     if (Input.GetKeyDown(Input.KeyCode.w) && player.grounded) {
         player.velocity.y -= Const.JUMP_HEIGHT;
     }
     //Apply the velocity
-    player.position.x += player.velocity.x;
-    player.position.y += player.velocity.y;
+    player.transform.position.x += player.velocity.x;
+    player.transform.position.y += player.velocity.y;
     //Collision detection (kinda)
-    if (player.position.y > Display.height - player.scale.y) {
+    var playerSize = Vector2.Mul(player.transform.scale, player.renderer.size);
+    if (player.transform.position.y > Display.height - (playerSize.y / 2)) {
         //Resition of the Collision
-        player.position.y -= player.position.y - (Display.height - player.scale.y); //Delta
+        player.transform.position.y -= player.transform.position.y - (Display.height - (playerSize.y / 2)); //Delta
         player.grounded = true;
         player.velocity.y = 0;
     }
     else {
         player.grounded = false;
     }
-    //Debug.Log("Vel x:" + player.velocity.y)
     //Done
-    player.Draw();
+    Display.AddGameObject(player);
 }
+function LateUpdate() { Display.Update(); }
 //Event listeners
 Time.AddAwakeCallback(Awake);
 Time.AddUpdateCallback(Update);
+Time.AddLateUpdateCallback(LateUpdate);
