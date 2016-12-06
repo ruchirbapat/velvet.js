@@ -106,13 +106,16 @@ The project employs the following naming convention:
 - variables and member vars use camel casing : "exampleFloat", "anotherExample"
 - Private of protected properties begin with an underscore : "_privateVariable", "_PrivateMethod"
 - Constants use an all uppercase separated by underscore convention  : "EXAMPLE_CONST"
+- Curley brackets on the next line please
+- If a statment is short do it inline (with braces) e.g. if(true) { func(); }
 
 Practises:
 - Don't over comment, most of the code will be self explanatory
-- Dont use a header exmapling the class, reasons discussed here: https://improvingsoftware.com/2011/06/27/5-best-practices-for-commenting-your-code/
+- Dont use a comment header explaining the class
 - Each class should get its own file
 - Every class should have a constructor even if it is blank
 - Each method should have one or two lines explaining its contents
 - Every file and folder is all lowercase
 - Namespaces are used instead of static classes
+- If a callback is required, declare the function in the local scope
 - Add to this list if necessary...
