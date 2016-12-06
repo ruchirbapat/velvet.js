@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <!-- Makes sure that anvas is positioned correctly -->
+        <link rel="stylesheet" type="text/css" href="../misc/style.css"/>
+        
+        <!-- Written in typescript and compiled -->
+        <script type="text/javascript" src="../build/script.js" ></script>
+        <script type="text/javascript" src="../misc/stats.js" ></script>
+    </head>
+    
+    <body>
+    <script>
+
+let player = new GameObject("player");
+
+let rightArm = new GameObject("rightArm");
+let leftArm = new GameObject("leftArm");
+let gun = new GameObject("gun");
+
+let scope = new GameObject("scope");
+let silencer = new GameObject("silencer");
+let magazine = new GameObject("magazine");
+
+gun.transform.AddChildren   ([scope.transform,   silencer.transform, magazine.transform]);
+player.transform.AddChildren([leftArm.transform, rightArm.transform, gun.transform]);
+
+let middleman = new SceneNode("middle man");
+
+middleman.SetParent(player.transform);
+middleman.AddChild(gun.transform);
+
+SceneNode.Print();
+
+gun.transform.position = new Vector2(10, 10); Debug.Spacer();
+player.transform.rotation += 20; Debug.Spacer();
+middleman.Update();
+
+// function Start() { Display.Create(); }
+// function Update() { }
+
+    </script>
+
+    </body>
+</html>

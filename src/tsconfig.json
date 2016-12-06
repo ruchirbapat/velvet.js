@@ -24,6 +24,10 @@
         "core/colour.ts",
         "core/input.ts",
 
+        //Scene graph
+        "core/base.ts",
+        "core/scene.ts",
+
         //Game object components
         "components/component.ts",
         "components/transform.ts",

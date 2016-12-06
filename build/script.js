@@ -646,6 +646,196 @@ var Input;
     };
 })(Input || (Input = {}));
 ;
+//Everything in the engine must inherit from this
+//Will allow for generatic functions to take in any type
+var Base = (function () {
+    function Base(name) {
+        if (name === void 0) { name = "new"; }
+        this.name = ""; //Pointless, just allows for clean organisation
+        this._instanceID = Base.GetNextInstanceID(); //Like a GUID, but counts up
+        this.name = name;
+    }
+    Object.defineProperty(Base.prototype, "instanceID", {
+        get: function () { return this._instanceID; },
+        enumerable: true,
+        configurable: true
+    });
+    Base.GetNextInstanceID = function () { Base._instanceCounter += 1; return Base._instanceCounter; };
+    Base.prototype.ToString = function () { return this.name + " : " + this.constructor.name + " - InstanceID : " + this.instanceID; };
+    //Removes every known property
+    Base.prototype.Destroy = function () {
+        for (var prop in this) {
+            if (this.hasOwnProperty(prop)) {
+                delete this[prop];
+            }
+        }
+        delete this;
+    };
+    Base.Destroy = function (object) { object.Destroy(); };
+    // -- NOT WORKING --
+    //Will create an exact copy of this
+    Base.prototype.Clone = function () {
+        var result = (new this.constructor);
+        for (var attrib in this) {
+            if (this.hasOwnProperty(attrib)) {
+                //Instance ID must be unique for every object
+                if (this[attrib] === this.instanceID) {
+                    continue;
+                }
+                result[attrib] = this[attrib];
+            }
+        }
+        result.name = this.name + " clone";
+        return result;
+    };
+    Base.Instantiate = function (original) { return original.Clone(); };
+    //Counts up everytime an instance of this class is created
+    //Later update the allocation system to account for destroyed entitys
+    Base._instanceCounter = 0;
+    return Base;
+}());
+//This is the base class for any possible node in the scene graph
+//The scene graph organises all bodys into a heirachy structure
+var SceneNode = (function (_super) {
+    __extends(SceneNode, _super);
+    //Will setup this as a child of root
+    function SceneNode(name) {
+        if (name === void 0) { name = "SceneNode"; }
+        _super.call(this, name);
+        this._parent = SceneNode.root; //Holds the current parent that is storing this
+        this._children = {};
+        //Make sure this object isnt actually root
+        if (SceneNode.root != null) {
+            SceneNode.root.AddChild(this);
+        }
+        else {
+            this._parent = null;
+        }
+    }
+    Object.defineProperty(SceneNode.prototype, "parent", {
+        //Getters and setters
+        get: function () { return this._parent; },
+        set: function (n) { this.SetParent(n); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SceneNode.prototype, "childCount", {
+        //Getters
+        get: function () { return Object.keys(this._children).length; } //May not work on older browsers
+        ,
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SceneNode.prototype, "recursiveChildCount", {
+        get: function () {
+            //Counts up by recusivly totaling the childCount
+            function CountChildren(obj) {
+                var total = obj.childCount;
+                for (var childID in obj._children) {
+                    total += CountChildren(obj._children[childID]);
+                }
+                return total;
+            }
+            return CountChildren(this);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //Needs to update all children - this causes a flow on effect
+    SceneNode.prototype.Update = function () {
+        for (var key in this._children) {
+            this._children[key].Update();
+        }
+    };
+    //Will remove the object and account for all scene graph refernces
+    SceneNode.prototype.Destroy = function () {
+        //First all children of this need to be deleted
+        for (var key in this._children) {
+            this._children[key].Destroy(); //Recursivly remove
+            delete this._children[key]; //Remove ref from child array
+        }
+        //Remove from parents child list
+        if (this._parent != null) {
+            delete this._parent._children[this.instanceID];
+        }
+        //Manually remove all properties
+        this._children = {};
+        this._parent = null;
+        delete this._children;
+        delete this._parent;
+        _super.prototype.Destroy.call(this);
+    };
+    SceneNode.prototype.DeleteChild = function (child) { if (child.instanceID in this._children) {
+        child.Destroy();
+    } };
+    //Allows a child to be added to the object - returns the new child
+    SceneNode.prototype.AddChild = function (child) {
+        //If the child has a parent, remove the refernce in that array
+        if (child._parent != null) {
+            delete child._parent._children[child._instanceID];
+            child._parent = null;
+        }
+        //Add to this child array and set the parent of the child
+        this._children[child.instanceID] = child;
+        child._parent = this;
+        return child;
+    };
+    SceneNode.prototype.SetParent = function (parent) { parent.AddChild(this); };
+    SceneNode.prototype.AddChildren = function (children) { for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
+        var child = children_1[_i];
+        this.AddChild(child);
+    } };
+    //Returns the children as an array instead of a dictionary
+    //This is very dodgy as it assumes the dictionary is sorted based on the order elemnts are added - fix this
+    SceneNode.prototype.GetAllChildren = function () {
+        var resultingArray = [];
+        for (var childID in this._children) {
+            resultingArray.push(this._children[childID]);
+        }
+        return resultingArray;
+    };
+    //Functions for getting children
+    SceneNode.prototype.GetChildByID = function (ID) { return this._children[ID]; }; // O(1)
+    SceneNode.prototype.GetChild = function (index) { return this.GetAllChildren()[index]; }; // O(n)
+    SceneNode.prototype.FindChild = function (child) { return this._children[child.instanceID]; }; // O(1)
+    SceneNode.prototype.FindChildByName = function (name) {
+        for (var child in this._children) {
+            if (this._children[child].name == name) {
+                return this._children[child];
+            }
+        }
+        return null;
+    }; // worst case O(this.childCount)
+    //Static scene functions
+    //Optional function that gives some inforation from inherited classes
+    SceneNode.prototype.GetExtraInformation = function () { return " "; };
+    //Static methods for visually displaying the current hierarchy
+    SceneNode.Print = function () {
+        function printChildren(parent) {
+            //Holds a nice debug message
+            var formattedInfo = "[ID: " + parent.instanceID + "] " + parent.name + " (" + parent.GetExtraInformation() + ") => " + parent.constructor.name;
+            if (parent.childCount > 0) {
+                //Recursivly print the children of the children
+                Debug.CreateGroup(formattedInfo);
+                for (var child in parent._children) {
+                    printChildren(parent._children[child]);
+                }
+                Debug.EndGroup();
+            }
+            else {
+                Debug.Log(formattedInfo);
+            }
+        }
+        ;
+        printChildren(SceneNode.root);
+    };
+    //By default anything is a child of root
+    SceneNode.root = new SceneNode("root");
+    return SceneNode;
+}(Base));
+//Needs to update the root node
+//Removed as updates will be handled on set
+//Time.AddEarlyUpdateCallback(SceneNode._root.Update); 
 //Any class that can be added to a gameobject needs to inherit from this
 var Component = (function () {
     function Component() {
@@ -658,17 +848,101 @@ var Component = (function () {
 var Transform = (function (_super) {
     __extends(Transform, _super);
     function Transform() {
-        _super.call(this);
+        _super.apply(this, arguments);
         //Currently all properties are public
-        this.position = new Vector2(0, 0);
-        this.scale = new Vector2(1, 1);
-        this.rotation = 0.0;
-        this.position = new Vector2(0, 0);
-        this.scale = new Vector2(1, 1);
-        this.rotation = 0.0;
+        this._position = new Vector2(0, 0);
+        this._scale = new Vector2(1, 1);
+        this._rotation = 0.0;
     }
+    Object.defineProperty(Transform.prototype, "position", {
+        //private _localPositon : Vector2 = new Vector2(0, 0);
+        //private _localScale : Vector2 = new Vector2(0, 0);
+        //private _localRotation : number = 0.0;
+        //Setters are where the magic happens
+        get: function () { return this._position; },
+        //public get localPosition() : Vector2 { return this._localPositon; }
+        //public get localRotation() : number { return this._localRotation; }
+        //public get localScale() : Vector2 { return this._localScale; }
+        set: function (p) { this._position = p; _super.prototype.Update.call(this); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "rotation", {
+        get: function () { return this._rotation; },
+        set: function (r) { this._rotation = r; _super.prototype.Update.call(this); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "scale", {
+        get: function () { return this._scale; },
+        set: function (s) { this._scale = s; _super.prototype.Update.call(this); },
+        enumerable: true,
+        configurable: true
+    });
+    //Will find the closes transform parent
+    Transform.prototype.GetClosestTransformParent = function () {
+        //Keep looping up one parent until root is reached
+        function CheckParent(currentLayer) {
+            if (currentLayer.parent.instanceID == SceneNode.root.instanceID) {
+                return null;
+            }
+            //Is another iteration needed?
+            return (currentLayer.parent instanceof Transform) ? currentLayer.parent : CheckParent(currentLayer.parent);
+        }
+        return CheckParent(this);
+    };
+    //This will move the position of all children based on any transformations made to this
+    Transform.prototype.Update = function () {
+        //We can assume if this part of the code has been reached then a transformation has been made to the parent
+        var parentTransform = this.GetClosestTransformParent();
+        Debug.Log("Update called on: " + this.name);
+        //This will call update on all children
+        _super.prototype.Update.call(this);
+        /*
+        function MoveChildren(node : Transform)
+        {
+            for(let childID in node._children)
+            {
+                //Type must be transform for it to be affected
+                if(!(node._children[childID] instanceof Transform)) { continue; }
+
+                //Move by position (later local)
+                let child = <Transform>node._children[childID]
+
+                child.position = Vector2.Add(child.position, node.position);
+                child.scale = Vector2.Mul(child.scale, node.scale);
+                child.rotation = child.rotation + node.rotation;
+            }
+        } MoveChildren(this);
+        */
+    };
+    /*
+        public set position(a : Vector2)
+        {
+            this._position = a;
+    
+            //Bad, this method assumes the parent one layer above is a transform
+            if(this.parent instanceof Transform) { this._localPositon = Vector2.Sub(this.position, this.parent.position); }
+    
+            this.Update();
+        }
+    
+        public set rotation(a : number) { this._rotation = a; this.Update(); }
+        public set scale(a : Vector2) { this._scale = a; this.Update(); }
+    
+        constructor(name:string="Transform")
+        {
+            super(name);
+    
+            this.position = new Vector2(0, 0);
+            this.scale = new Vector2(1, 1);
+            this.rotation = 0.0;
+        }
+    */
+    //For debugging
+    Transform.prototype.GetExtraInformation = function () { return this.position.ToString() + ", " + this.rotation + ", " + this.scale.ToString(); };
     return Transform;
-}(Component));
+}(SceneNode));
 ;
 //A rederable shape
 var Rectangle = (function (_super) {
@@ -684,17 +958,14 @@ var Rectangle = (function (_super) {
     return Rectangle;
 }(Component));
 //A gameobjecty should work via a component system.
-var GameObject // extends SceneNode
- = (function () {
-    function GameObject // extends SceneNode
-        () {
-        //Components will be added and removed from the gameobject dynamically
-        //For now they are defined manually
-        this.transform = new Transform();
-        this.renderer = new Rectangle();
+var GameObject = (function () {
+    //Blank
+    function GameObject(name) {
+        if (name === void 0) { name = "GameObject"; }
+        this.transform = new Transform(name);
+        this.renderer = new Rectangle(); //Temp
     }
-    return GameObject // extends SceneNode
-    ;
+    return GameObject;
 }());
 //This contains a renderer class - the renderer is responsible for:
 // - Controlling all canvas operations
