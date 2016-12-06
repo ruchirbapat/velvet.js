@@ -55,7 +55,7 @@ class Renderer
         //Save canvas context state
         this._context.save();
         this._context.translate(position.x, position.y);
-        this._context.rotate(rot * Mathf.degToRad);
+        this._context.rotate(rot * Mathf.DegToRad);
         //this._context.scale(scale..x, scale.y);
     
         //Draw
@@ -71,7 +71,7 @@ class Renderer
         //Save canvas context state
         this._context.save();
         this._context.translate(position.x, position.y);
-        this._context.rotate(rot * Mathf.degToRad);
+        this._context.rotate(rot * Mathf.DegToRad);
         //this._context.scale(scale..x, scale.y);
     
         //Draw

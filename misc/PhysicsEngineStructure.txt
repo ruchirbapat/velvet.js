@@ -1,0 +1,60 @@
+This is the structure for the Physics Engine - DebJS
+
+Classes involved:
+1. Collider.ts
+2. Rigidbody.ts
+3. Collision.ts
+4. Body.ts
+4. Physics.ts
+
+
+Collider.ts
+---------------
+What does Collider.ts do?
+    - Contains an abstract/base Collider class that all other Colliders shall derive from
+    - Contains a BoxCollider class
+    - Contains a CircleCollider class
+    - Will contain a PolygonCollider class
+
+
+Rigidbody.ts
+---------------
+What does Rigidbody.ts do?
+    - Contains a Rigidbody class that holds physics-based code such as physics properties
+    - Examples:
+        - Velocity
+        - Acceleration
+        - Inertia
+        - Torque
+        - Mass
+        - Density
+
+
+Collision.ts
+---------------
+What does Collision.ts do?
+    - Contains a class for a generic Contact point
+    - Contains a class for a Manifold that holds collision data and associated properties for solving
+    - Contains algorithms that calculate Manifolds given two Colliders (note: do not pass in a Body/Rigidbody/GameObject)
+    - Contains a CollisionSolver namespace with a ResolveCollision function that does:
+        - Takes into two Bodies
+        - Finds their individual Collider's names 
+        - Generate a string
+        - Pass the string to eval() which will run the code and return a Manifold
+        - Solve collision based off collision information from Manifold and physics properties from the Body's Rigidbody component
+
+
+Body.ts
+---------------
+What does Body.ts do?
+    - Contains a Collider
+    - Contains a Rigidbody
+
+
+Physics.ts
+---------------
+What does Physics.ts do?
+    - Use quadtrees, layers etc. to get a broadphase (list of objects that could possibly collide)
+    - Pass the broadphase to a narrowphase (filter into a list of objects that are actually currently colliding)
+    - Use the CollisionSolver to solve CollisionSolver
+    - Be seamless and non-interactable by the user

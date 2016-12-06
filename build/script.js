@@ -56,12 +56,14 @@ var Debug;
 var Mathf;
 (function (Mathf) {
     //Consts
-    Mathf.pi = 3.1415926;
-    Mathf.tau = 6.2831852;
-    Mathf.rounding = 0.005; //Epsilon
-    Mathf.infinite = Infinity;
-    Mathf.radToDeg = 360 / Mathf.tau;
-    Mathf.degToRad = (Mathf.pi * 2) / 360;
+    Mathf.PI = 3.1415926;
+    Mathf.TAU = 6.2831852;
+    Mathf.Rounding = 0.005; //Epsilon
+    Mathf.NegativeInfinity = Number.NEGATIVE_INFINITY;
+    Mathf.PositiveInfinity = Number.POSITIVE_INFINITY;
+    ;
+    Mathf.RagToDeg = 360 / Mathf.TAU;
+    Mathf.DegToRad = (Mathf.PI * 2) / 360;
     //Default javasciprt wrapper functions
     function Abs(f) { return Math.abs(f); }
     Mathf.Abs = Abs;
@@ -249,7 +251,7 @@ var Mathf;
     ;
     //Because of slight round errors in floats, this should be used when comparing two values
     function Approximatly(a, b, round) {
-        if (round === void 0) { round = Mathf.rounding; }
+        if (round === void 0) { round = Mathf.Rounding; }
         return Mathf.Abs(a - b) < round;
     }
     Mathf.Approximatly = Approximatly;
@@ -848,103 +850,100 @@ var Component = (function () {
 var Transform = (function (_super) {
     __extends(Transform, _super);
     function Transform() {
-        _super.apply(this, arguments);
+        _super.call(this);
         //Currently all properties are public
-        this._position = new Vector2(0, 0);
-        this._scale = new Vector2(1, 1);
-        this._rotation = 0.0;
+        this.position = new Vector2(0, 0);
+        this.scale = new Vector2(1, 1);
+        this.rotation = 0.0;
+        this.position = new Vector2(0, 0);
+        this.scale = new Vector2(1, 1);
+        this.rotation = 0.0;
     }
-    Object.defineProperty(Transform.prototype, "position", {
-        //private _localPositon : Vector2 = new Vector2(0, 0);
-        //private _localScale : Vector2 = new Vector2(0, 0);
-        //private _localRotation : number = 0.0;
-        //Setters are where the magic happens
-        get: function () { return this._position; },
-        //public get localPosition() : Vector2 { return this._localPositon; }
-        //public get localRotation() : number { return this._localRotation; }
-        //public get localScale() : Vector2 { return this._localScale; }
-        set: function (p) { this._position = p; _super.prototype.Update.call(this); },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "rotation", {
-        get: function () { return this._rotation; },
-        set: function (r) { this._rotation = r; _super.prototype.Update.call(this); },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "scale", {
-        get: function () { return this._scale; },
-        set: function (s) { this._scale = s; _super.prototype.Update.call(this); },
-        enumerable: true,
-        configurable: true
-    });
-    //Will find the closes transform parent
-    Transform.prototype.GetClosestTransformParent = function () {
-        //Keep looping up one parent until root is reached
-        function CheckParent(currentLayer) {
-            if (currentLayer.parent.instanceID == SceneNode.root.instanceID) {
-                return null;
-            }
-            //Is another iteration needed?
-            return (currentLayer.parent instanceof Transform) ? currentLayer.parent : CheckParent(currentLayer.parent);
-        }
-        return CheckParent(this);
-    };
-    //This will move the position of all children based on any transformations made to this
-    Transform.prototype.Update = function () {
-        //We can assume if this part of the code has been reached then a transformation has been made to the parent
-        var parentTransform = this.GetClosestTransformParent();
-        Debug.Log("Update called on: " + this.name);
-        //This will call update on all children
-        _super.prototype.Update.call(this);
-        /*
-        function MoveChildren(node : Transform)
-        {
-            for(let childID in node._children)
-            {
-                //Type must be transform for it to be affected
-                if(!(node._children[childID] instanceof Transform)) { continue; }
-
-                //Move by position (later local)
-                let child = <Transform>node._children[childID]
-
-                child.position = Vector2.Add(child.position, node.position);
-                child.scale = Vector2.Mul(child.scale, node.scale);
-                child.rotation = child.rotation + node.rotation;
-            }
-        } MoveChildren(this);
-        */
-    };
-    /*
-        public set position(a : Vector2)
-        {
-            this._position = a;
-    
-            //Bad, this method assumes the parent one layer above is a transform
-            if(this.parent instanceof Transform) { this._localPositon = Vector2.Sub(this.position, this.parent.position); }
-    
-            this.Update();
-        }
-    
-        public set rotation(a : number) { this._rotation = a; this.Update(); }
-        public set scale(a : Vector2) { this._scale = a; this.Update(); }
-    
-        constructor(name:string="Transform")
-        {
-            super(name);
-    
-            this.position = new Vector2(0, 0);
-            this.scale = new Vector2(1, 1);
-            this.rotation = 0.0;
-        }
-    */
-    //For debugging
-    Transform.prototype.GetExtraInformation = function () { return this.position.ToString() + ", " + this.rotation + ", " + this.scale.ToString(); };
     return Transform;
-}(SceneNode));
+}(Component));
 ;
-//A rederable shape
+var AABB = (function () {
+    function AABB() {
+        this.min = Vector2.zero;
+        this.max = Vector2.zero;
+    }
+    return AABB;
+}());
+var Collider = (function () {
+    function Collider() {
+        this.physicsMaterial = new PhysicsMaterial(0.5, 0.8);
+        this.transform = new Transform();
+        this.axisAlignedBoundingBox = new AABB();
+        this.name = "Collider";
+    }
+    return Collider;
+}());
+var BoxCollider = (function (_super) {
+    __extends(BoxCollider, _super);
+    function BoxCollider(t) {
+        _super.call(this);
+        this.name = "Box";
+        this.transform = t;
+        this.axisAlignedBoundingBox.min = this.transform.position.Clone();
+        this.axisAlignedBoundingBox.max = Vector2.Add(this.transform.position, this.transform.scale);
+    }
+    BoxCollider.prototype.GetX = function () {
+        return this.transform.position.x;
+    };
+    BoxCollider.prototype.GetY = function () {
+        return this.transform.position.y;
+    };
+    BoxCollider.prototype.GetWidth = function () {
+        return this.transform.scale.x;
+    };
+    BoxCollider.prototype.GetHeight = function () {
+        return this.transform.scale.y;
+    };
+    return BoxCollider;
+}(Collider));
+var CircleCollider = (function (_super) {
+    __extends(CircleCollider, _super);
+    function CircleCollider(t, r) {
+        _super.call(this);
+        this._radius = 1.0;
+        this.diameter = this.radius * 2;
+        this.area = Mathf.PI * this.radius * this.radius;
+        this.name = "Circle";
+        this.transform = t;
+        this.transform.scale = new Vector2(r, r);
+        this.radius = r;
+        this.area = Mathf.PI * this.radius * this.radius;
+        this.diameter = this.radius * 2;
+    }
+    Object.defineProperty(CircleCollider.prototype, "radius", {
+        set: function (r) {
+            this._radius = r;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return CircleCollider;
+}(Collider));
+var PolygonCollider = (function (_super) {
+    __extends(PolygonCollider, _super);
+    function PolygonCollider() {
+        _super.call(this);
+    }
+    return PolygonCollider;
+}(Collider));
+var Rigidbody = (function (_super) {
+    __extends(Rigidbody, _super);
+    function Rigidbody(m) {
+        _super.call(this);
+        this.velocity = Vector2.zero;
+        this.mass = m;
+        this.inverseMass = 1 / this.mass;
+        this.restitution = this.inverseMass * 4;
+        console.log("Generated restitution = " + this.restitution);
+    }
+    return Rigidbody;
+}(Component));
+//A renderable shape
 var Rectangle = (function (_super) {
     __extends(Rectangle, _super);
     //Construct by default
@@ -957,15 +956,29 @@ var Rectangle = (function (_super) {
     }
     return Rectangle;
 }(Component));
-//A gameobjecty should work via a component system.
-var GameObject = (function () {
-    //Blank
-    function GameObject(name) {
-        if (name === void 0) { name = "GameObject"; }
-        this.transform = new Transform(name);
-        this.renderer = new Rectangle(); //Temp
+var Circle = (function (_super) {
+    __extends(Circle, _super);
+    //Regular constructor
+    function Circle() {
+        //Call parent constructor first
+        _super.call(this);
     }
-    return GameObject;
+    return Circle;
+}(Component));
+//A gameobject should work via a component system.
+var GameObject // extends SceneNode
+ = (function () {
+    function GameObject // extends SceneNode
+        () {
+        //Components will be added and removed from the gameobject dynamically
+        //For now they are defined manually
+        this.transform = new Transform();
+        this.renderer = new Rectangle();
+        this.body = new Body();
+        this.body.rigidbody = new Rigidbody(5);
+    }
+    return GameObject // extends SceneNode
+    ;
 }());
 //This contains a renderer class - the renderer is responsible for:
 // - Controlling all canvas operations
@@ -1016,7 +1029,7 @@ var Renderer = (function () {
         //Save canvas context state
         this._context.save();
         this._context.translate(position.x, position.y);
-        this._context.rotate(rot * Mathf.degToRad);
+        this._context.rotate(rot * Mathf.DegToRad);
         //this._context.scale(scale..x, scale.y);
         //Draw
         this.SetFillColour(col);
@@ -1030,7 +1043,7 @@ var Renderer = (function () {
         //Save canvas context state
         this._context.save();
         this._context.translate(position.x, position.y);
-        this._context.rotate(rot * Mathf.degToRad);
+        this._context.rotate(rot * Mathf.DegToRad);
         //this._context.scale(scale..x, scale.y);
         //Draw
         this.SetStrokeColour(col);
@@ -1094,3 +1107,273 @@ var Renderer = (function () {
 }());
 //Create a default one for static use, this allows for multiple renderers
 var Display = new Renderer();
+var Body = (function () {
+    function Body() {
+        this.collider = new BoxCollider(new Transform());
+        this.rigidbody = new Rigidbody(1);
+    }
+    return Body;
+}());
+//Contact point
+var Contact = (function () {
+    function Contact() {
+        this.position = Vector2.zero;
+        this.normal = Vector2.zero;
+        this.penetration = 0;
+    }
+    return Contact;
+}());
+//Generic manifold, holding collision data
+var Manifold = (function () {
+    function Manifold() {
+        //All points of contact
+        this.contacts = new Array(2);
+        this.contacts.length = 2;
+        for (var i = 0; i < this.contacts.length; i++)
+            this.contacts[i] = new Contact();
+        this.contactCount = 0;
+    }
+    return Manifold;
+}());
+/*
+* The following functions have one purpose: to generate a manifold, given two objects
+*/
+function BoxToBox(boxA, boxB) {
+    Debug.Log("BoxToBox function being called.");
+    /*if(boxA.GetX() < boxB.GetX() + boxB.GetWidth() && boxA.GetX() + boxA.GetWidth() > boxB.GetX() && boxA.GetY() < boxB.GetY() + boxB.GetHeight() && boxA.GetHeight() + boxA.GetY() > boxB.GetY()) {
+         return true;
+    } else {
+        return false;
+    }*/
+    var manifold = new Manifold();
+    //From A to B
+    var translation = new Vector2((boxB.transform.position.x - boxA.transform.position.x), (boxB.transform.position.y - boxA.transform.position.y));
+    var a_extent = (boxA.axisAlignedBoundingBox.max.x - boxA.axisAlignedBoundingBox.min.x) / 2;
+    var b_extent = (boxB.axisAlignedBoundingBox.max.x - boxB.axisAlignedBoundingBox.min.x) / 2;
+    var overlap = new Vector2((a_extent + b_extent - Mathf.Abs(translation.x)), (a_extent + b_extent - Mathf.Abs(translation.y)));
+    manifold.contacts[0].position = new Vector2(Mathf.Max(boxA.axisAlignedBoundingBox.min.x, boxB.axisAlignedBoundingBox.min.x), Mathf.Max(boxA.axisAlignedBoundingBox.min.y, boxB.axisAlignedBoundingBox.min.y));
+    manifold.contacts[1].position = new Vector2(Mathf.Max(boxA.axisAlignedBoundingBox.max.x, boxB.axisAlignedBoundingBox.max.x), Mathf.Max(boxA.axisAlignedBoundingBox.max.y, boxB.axisAlignedBoundingBox.max.y));
+    if (overlap.x > overlap.y) {
+        manifold.contacts[0].normal = (translation.x < 0) ? Vector2.right : Vector2.left;
+        manifold.contacts[0].penetration = overlap.x;
+    }
+    else {
+        manifold.contacts[1].normal = (translation.y < 0) ? Vector2.up : Vector2.down;
+        manifold.contacts[1].penetration = overlap.y;
+    }
+    /*
+        if(x_overlap > y_overlap)
+    {
+      // Point towards B knowing that t points from A to B
+      c->normal = t.x < 0 ? Vec( 1, 0 ) : Vec( -1, 0 )
+      c->penetration = x_overlap;
+    }
+    else
+    {
+      // Point toward B knowing that t points from A to B
+      c->normal = t.y < 0 ? Vec( 0, 1 ) : Vec( 0, -1 );
+      c->penetration = y_overlap;
+    }
+    */
+    return manifold;
+}
+//Perfect
+function CircleToCircle(c1, c2) {
+    Debug.Log("CircleToCircle function being called.");
+    /*if(Mathf.Sqrt(((Mathf.Pow((c1.transform.position.x - c2.transform.position.x) , 2)) + (Mathf.Pow((c1.transform.position.y - c2.transform.position.y) , 2)))) <= c1.radius + c2.radius) {
+        return true;
+    } else {
+        return false;
+    }*/
+    var manifold = new Manifold();
+    var translationVector = new Vector2((c2.transform.position.x - c1.transform.position.x), (c2.transform.position.y - c1.transform.position.y));
+    var radii = c1.radius + c2.radius;
+    if (translationVector.SqrMagnitude() > radii * radii)
+        return null;
+    var distance = translationVector.Magnitude();
+    var contact1 = new Contact();
+    manifold.contacts[0] = contact1;
+    if (distance == 0) {
+        manifold.contacts[0].penetration = c1.radius;
+        manifold.contacts[0].normal = Vector2.up;
+        manifold.contacts[0].position = c1.transform.position;
+        manifold.contactCount++;
+    }
+    else {
+        manifold.contacts[0].penetration = radii - distance;
+        manifold.contacts[0].normal = new Vector2((translationVector.x / distance), (translationVector.y / distance));
+        manifold.contacts[0].position.x = manifold.contacts[0].normal.x * c1.radius + c1.transform.position.x;
+        manifold.contacts[0].position.y = manifold.contacts[0].normal.y * c1.radius + c1.transform.position.y;
+        manifold.contactCount++;
+    }
+    manifold.colliderA = c1;
+    manifold.colliderB = c2;
+    return manifold;
+}
+function CircleToBox(c, b) {
+    var manifold = new Manifold();
+    manifold.colliderA = c;
+    manifold.colliderB = b;
+    //From A to B
+    var translationVector = new Vector2((b.transform.position.x - c.transform.position.x), (b.transform.position.y - c.transform.position.y));
+    var closest = translationVector;
+    var x_extent = (c.axisAlignedBoundingBox.max.x - b.axisAlignedBoundingBox.min.x) / 2;
+    var y_extent = (c.axisAlignedBoundingBox.max.y - b.axisAlignedBoundingBox.min.y) / 2;
+    closest.x = Mathf.Clamp(closest.x, -x_extent, x_extent);
+    closest.y = Mathf.Clamp(closest.y, -y_extent, y_extent);
+    var inside = false;
+    if (Vector2.Equal(translationVector, closest)) {
+        inside = true;
+        if (Mathf.Abs(translationVector.x) > Mathf.Abs(translationVector.y)) {
+            if (closest.x > 0) {
+                closest.x = x_extent;
+            }
+            else {
+                closest.x = -x_extent;
+            }
+        }
+        else {
+            if (closest.y > 0) {
+                closest.y = y_extent;
+            }
+            else {
+                closest.y = -y_extent;
+            }
+        }
+    }
+    var normal = new Vector2(translationVector.x - closest.x, translationVector.y - closest.y);
+    var distance = normal.SqrMagnitude();
+    var radius = c.radius;
+    if (distance > radius * radius && !inside) {
+        return null;
+    }
+    distance = Mathf.Sqrt(distance);
+    if (inside) {
+        manifold.contacts[0].normal = new Vector2(-translationVector.x, -translationVector.y);
+        manifold.contacts[0].penetration = radius - distance;
+    }
+    else {
+        manifold.contacts[0].normal = translationVector.Clone();
+        manifold.contacts[0].penetration = radius - distance;
+    }
+    return manifold;
+}
+function BoxToCircle(b, c) {
+    Debug.Log("BoxToCircle function being called.");
+    return CircleToBox(c, b);
+}
+//Add CircleToLine (done, but need to import code from MikeJS)
+function CircleToPoint(c, p) {
+    if (Vector2.Distance(c.transform.position, p) <= c.radius) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+function PointToCircle(p, c) {
+    return CircleToPoint(c, p);
+}
+function PointToBox(p, b) {
+    if (p.x >= b.transform.position.x && p.x <= b.transform.position.x + b.transform.scale.y && p.y >= b.transform.position.y && p.y <= b.transform.position.y + b.transform.scale.y) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+function BoxToPoint(b, p) {
+    return PointToBox(p, b);
+}
+function PointToPoint(p1, p2) {
+    if (Vector2.Distance(p1, p2) <= Mathf.Rounding) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+var CollisionSolver;
+(function (CollisionSolver) {
+    /**
+     * End goal:
+     * There should be a function that takes in two Bodies and solves the collision
+     * Firstly, it will check each Body's Child Collider's names (e.g. BoxCollider or CircleCollider) and concatenate a string to pass to eval()
+     * eval() will take the string, run the code and return the Manifold which contains collision data on how to solve the collision
+     * Then, it will solve the collision and return a bool perhaps?
+     */
+    //This function is to die
+    function CheckCollision(objectA, objectB) {
+        var aName = objectA.name;
+        var bName = objectB.name;
+        var funcName = aName + "To" + bName;
+        console.log("Calling CollisionSolver.CheckCollision(): " + funcName);
+        //var funcToCall = new Function(funcName);
+        return eval(funcName + "(" + "objectA" + ", objectB)");
+    }
+    CollisionSolver.CheckCollision = CheckCollision;
+    //Import useful code from 'CheckCollision' into this such as the string contcat and eval() to find Manifold
+    function ResolveCollision(objectA, objectB) {
+        //This needs to have a GetComponent<>()
+        //Generic code
+        var collisionData = eval((objectA.collider.name + "To" + objectB.collider.name) + "(objectA.collider, objectB.collider)");
+        console.log(collisionData);
+        //Relative velocity
+        var relativeVelocity = new Vector2(objectB.rigidbody.velocity.x - objectA.rigidbody.velocity.x, objectB.rigidbody.velocity.y - objectA.rigidbody.velocity.y);
+        //Velocity along the Normal
+        var velocityAlongNormal = Vector2.Dot(relativeVelocity, collisionData.contacts[0].normal);
+        if (velocityAlongNormal >= 0) {
+            return false;
+        }
+        var restitution = Mathf.Min(objectA.rigidbody.restitution, objectB.rigidbody.restitution);
+        //Temp
+        restitution = 0.2;
+        var impulseScalar = -(1 + restitution) * velocityAlongNormal;
+        impulseScalar /= objectA.rigidbody.inverseMass + objectB.rigidbody.inverseMass;
+        var impulse = new Vector2((collisionData.contacts[0].normal.x * impulseScalar), (collisionData.contacts[0].normal.y * impulseScalar));
+        /*objectA.rigidbody.velocity.x -= objectA.rigidbody.inverseMass * impulse.x;
+        objectA.rigidbody.velocity.y -= objectA.rigidbody.inverseMass * impulse.y;
+        
+        objectB.rigidbody.velocity.x += objectB.rigidbody.inverseMass * impulse.x;
+        objectB.rigidbody.velocity.y += objectB.rigidbody.inverseMass * impulse.y;*/
+        var massSum = objectA.rigidbody.mass + objectB.rigidbody.mass;
+        var ratio = objectA.rigidbody.mass / massSum;
+        objectA.rigidbody.velocity.x -= ratio * impulse.x;
+        objectA.rigidbody.velocity.y -= ratio * impulse.y;
+        ratio = objectB.rigidbody.mass / massSum;
+        objectB.rigidbody.velocity.x += ratio * impulse.x;
+        objectB.rigidbody.velocity.y += ratio * impulse.y;
+        return true;
+    }
+    CollisionSolver.ResolveCollision = ResolveCollision;
+})(CollisionSolver || (CollisionSolver = {}));
+var Broadphase;
+(function (Broadphase) {
+    function GeneratePairs(bodies) {
+        var pairs = [];
+        for (var i = 0; i < bodies.length; i++) {
+            for (var j = 0; j < bodies.length; j++) {
+                var bodyA = bodies[i];
+                var bodyB = bodies[j];
+                if (bodyA === bodyB)
+                    continue;
+                if (bodyA.collider.transform.position.x < bodyB.collider.transform.position.x + bodyB.collider.transform.scale.x && bodyA.collider.transform.position.x + bodyA.collider.transform.scale.x > bodyB.collider.transform.position.x && bodyA.collider.transform.position.y < bodyB.collider.transform.position.y + bodyB.collider.transform.scale.y && bodyA.collider.transform.scale.y + bodyA.collider.transform.position.y > bodyB.collider.transform.position.y) {
+                    pairs.push(bodyA);
+                    pairs.push(bodyB);
+                }
+            }
+        }
+    }
+    Broadphase.GeneratePairs = GeneratePairs;
+})(Broadphase || (Broadphase = {}));
+var PhysicsConstants;
+(function (PhysicsConstants) {
+    var GRAVITY = -9.8;
+})(PhysicsConstants || (PhysicsConstants = {}));
+var PhysicsMaterial = (function () {
+    function PhysicsMaterial(f, b) {
+        this.friction = f || 0.5;
+        this.bounce = b || 0.8;
+    }
+    return PhysicsMaterial;
+}());

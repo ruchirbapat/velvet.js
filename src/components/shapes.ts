@@ -1,4 +1,4 @@
-//A rederable shape
+//A renderable shape
 class Rectangle extends Component
 {
     public strokeColour : Colour;
@@ -15,5 +15,22 @@ class Rectangle extends Component
         this.fillColour = new Colour(0, 0, 0);
         this.size = new Vector2(10, 10);
         this.stroke = false;
+    }
+}
+
+class Circle extends Component 
+{
+    public strokeColour: Colour;
+    public fillColour: Colour;
+    public radius: Number;
+    public diameter: Number;
+    public area: Number;
+
+    //Regular constructor
+    constructor() {
+        //Call parent constructor first
+        super();
+
+
     }
 }

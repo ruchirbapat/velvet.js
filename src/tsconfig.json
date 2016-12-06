@@ -31,11 +31,16 @@
         //Game object components
         "components/component.ts",
         "components/transform.ts",
+        "components/collider.ts",
+        "components/rigidbody.ts",
         "components/shapes.ts",
         
         //Game objects
         "core/gameobject.ts",
-        "core/renderer.ts"
+        "core/renderer.ts",
+        "core/body.ts",
+        "core/collision.ts",
+        "core/physics.ts"
         
         //A demo of the above (^-^)
         //Compiled version has been placed in .html file

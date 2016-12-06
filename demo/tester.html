@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <!-- Makes sure that canvas is positioned correctly -->
+        <link rel="stylesheet" type="text/css" href="../misc/style.css"/>
+        
+        <!-- Written in typescript and compiled -->
+        <script type="text/javascript" src="../build/script.js" ></script>
+    </head>
+    
+    <body>
+        <script>
+
+var test = new GameObject();
+test.transform.position = new Vector2(200, 100);
+test.transform.scale = Vector2.one;
+test.body.collider = new BoxCollider(test.transform);
+
+var testBox = new GameObject();
+testBox.body.collider = new BoxCollider(testBox.transform);
+testBox.transform.position = new Vector2(400, 200);
+testBox.transform.scale = new Vector2(800, 1);
+
+function Awake() {
+    //Webpage features
+    document.body.requestPointerLock();
+    //Rendering
+    Display.Create(800, 400);
+    Display.backgroundColour = Colour.grey;
+    Display.AddGameObject(test);
+    Display.AddGameObject(testBox);
+
+}
+function Update() {
+    Display.Clear();
+    test.body.rigidbody.velocity.x = 2;
+    test.body.rigidbody.velocity.y = 2;
+
+
+    if(CollisionSolver.ResolveCollision(testBox.body, testBox.body)) {
+        return;
+    }
+
+    test.transform.position.x += test.body.rigidbody.velocity.x;
+    test.transform.position.y += test.body.rigidbody.velocity.y;
+    if(!Vector2.Equal(test.body.rigidbody.velocity, new Vector2(2, 2))) {
+        for(var i = 0; i < 1000; i++) {
+            console.log("VELOCITY CHANGE");
+        }
+    }
+
+    Display.AddGameObject(testBox);
+    Display.AddGameObject(test);
+
+    test.body.rigidbody.velocity.x = 0;
+    test.body.rigidbody.velocity.y = 0;
+    Display.Update();
+
+}
+//Temporary
+function Late() { Display.Update(); }
+//Event listeners
+Time.AddAwakeCallback(Awake);
+Time.AddUpdateCallback(Update);
+Time.AddLateUpdateCallback(Late);
+
+
+
+
+
+/*              
+var test = new GameObject();
+test.transform.position = new Vector2(200, 100);
+test.transform.scale = new Vector2(4, 4);
+test.body.collider = new CircleCollider(test.transform, 4);
+
+var staticCircle = new GameObject();
+
+
+function Awake() {
+    //Webpage features
+    document.body.requestPointerLock();
+    //Rendering
+    Display.Create(800, 400);
+    Display.backgroundColour = Colour.grey;
+    Display.AddGameObject(test);
+    Display.AddGameObject(testBox);
+
+}
+function Update() {
+    Display.Clear();
+    test.body.rigidbody.velocity.x += 2;
+    test.body.rigidbody.velocity.y += 2;
+    
+    if(CollisionSolver.ResolveCollision(testBox.body, testBox.body)) {
+        console.log("COLLISION!");
+    }
+
+    test.transform.position.x += test.body.rigidbody.velocity.x;
+    test.transform.position.y += test.body.rigidbody.velocity.y;
+
+    Display.AddGameObject(testBox);
+    Display.AddGameObject(test);
+
+    test.body.rigidbody.velocity.x = 0;
+    test.body.rigidbody.velocity.y = 0;
+
+    Display.Update();
+}
+//Temporary
+function Late() { Display.Update(); }
+//Event listeners
+Time.AddAwakeCallback(Awake);
+Time.AddUpdateCallback(Update);
+Time.AddLateUpdateCallback(Late);
+*/        
+        
+        
+        </script>
+
+    </body>
+</html>

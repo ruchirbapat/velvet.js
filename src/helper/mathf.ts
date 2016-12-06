@@ -2,12 +2,13 @@
 namespace Mathf
 {
 	//Consts
-    export let pi : number = 3.1415926;
-    export let tau : number = 6.2831852;
-    export let rounding : number = 0.005; //Epsilon
-    export let infinite : number = Infinity;
-    export let radToDeg : number = 360 / Mathf.tau;
-    export let degToRad : number = (Mathf.pi * 2) / 360; 
+    export let PI : number = 3.1415926;
+    export let TAU : number = 6.2831852;
+    export let Rounding : number = 0.005; //Epsilon
+	export let NegativeInfinity : number = Number.NEGATIVE_INFINITY;
+    export let PositiveInfinity : number = Number.POSITIVE_INFINITY;;
+    export let RagToDeg : number = 360 / Mathf.TAU;
+    export let DegToRad : number = (Mathf.PI * 2) / 360; 
 
 	//Default javasciprt wrapper functions
     export function Abs(f : number) : number { return Math.abs(f); }; //The absolute value of 'foo' (makes it posative)
@@ -145,5 +146,5 @@ namespace Mathf
 	};
 
 	//Because of slight round errors in floats, this should be used when comparing two values
-    export function Approximatly(a : number, b : number, round : number = Mathf.rounding) : boolean { return Mathf.Abs(a - b) < round; }
+    export function Approximatly(a : number, b : number, round : number = Mathf.Rounding) : boolean { return Mathf.Abs(a - b) < round; }
 }
