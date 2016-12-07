@@ -5,13 +5,7 @@ class GameObject // extends SceneNode
     //For now they are defined manually
     public transform : Transform = new Transform();
     public renderer : Rectangle = new Rectangle();
-    
-    public body : Body = new Body();
-    
-    constructor() {
-        this.body.rigidbody = new Rigidbody(5);
-    }
-    
+        
     //Blank
     //constructor() { } { super(); }
     //Update() : void { super.Update(); Display.AddGameObject(this); }

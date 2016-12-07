@@ -293,6 +293,8 @@ var Vector2 = (function () {
         return result;
     };
     //Static vector math functions:
+    Vector2.Cross = function (lhs, rhs) { return (lhs.x * rhs.y) - (lhs.y * rhs.x); };
+    ;
     Vector2.Dot = function (lhs, rhs) { return (lhs.x * rhs.x) + (lhs.y * rhs.y); };
     Vector2.Det = function (lhs, rhs) { return (lhs.x * rhs.y) - (lhs.y * rhs.x); };
     Vector2.Angle = function (from, to) { return Mathf.Atan2(Vector2.Dot(from, to), Vector2.Det(from, to)); };
@@ -374,6 +376,81 @@ var Vector2 = (function () {
     Vector2.up = new Vector2(0, 1);
     Vector2.down = new Vector2(0, -1);
     return Vector2;
+}());
+var Vertex = (function () {
+    function Vertex() {
+        this.x = 0;
+        this.y = 0;
+        this.index = 0;
+        this.rigidbody = new Rigidbody();
+        this.internal = false;
+    }
+    return Vertex;
+}());
+var Vertices = (function () {
+    function Vertices(points, rb) {
+        this.vertices = [];
+        this.vertices.length = points.length;
+        for (var i = 0; i < points.length; i++) {
+            var vertex = new Vertex();
+            vertex.x = points[i].x;
+            vertex.y = points[i].y;
+            vertex.index = i;
+            vertex.rigidbody = rb;
+            vertex.internal = false;
+            this.vertices.push(vertex);
+        }
+    }
+    Vertices.Area = function (verts, signed) {
+        var area = 0;
+        var j = verts.length - 1;
+        for (var i = 0; i < verts.length; i++) {
+            area += (verts[j].x - verts[i].x) * (verts[j].y + verts[i].y);
+            j = i;
+        }
+        if (signed)
+            return area / 2;
+        else
+            return Mathf.Abs(area) / 2;
+    };
+    Vertices.Centre = function (verts) {
+        var area = Vertices.Area(verts, true);
+        var centre = Vector2.zero;
+        var crossProduct;
+        var temp;
+        var j;
+        for (var i = 0; j < verts.length; i++) {
+            j = (i + 1) % verts.length;
+            var vertI = new Vector2(verts[i].x, verts[i].y);
+            var vertJ = new Vector2(verts[j].x, verts[j].y);
+            crossProduct = Vector2.Cross(vertI, vertJ);
+            temp = Vector2.Mul(Vector2.Add(vertI, vertJ), crossProduct);
+            centre = Vector2.Add(centre, temp);
+        }
+        return Vector2.Div(centre, 6 * area);
+    };
+    Vertices.Mean = function (verts) {
+        var average = Vector2.zero;
+        for (var i = 0; i < verts.length; i++) {
+            average.x += verts[i].x;
+            average.y += verts[i].y;
+        }
+        return Vector2.Div(average, verts.length);
+    };
+    Vertices.Inertia = function (verts, mass) {
+        var numerator = 0;
+        var denominator = 0;
+        for (var n = 0; n < verts.length; n++) {
+            var j = (n + 1) % verts.length;
+            var vertJ = new Vector2(verts[j].x, verts[j].y);
+            var vertN = new Vector2(verts[n].x, verts[n].y);
+            var cross = Mathf.Abs(Vector2.Cross(vertJ, vertN));
+            numerator += cross * (Vector2.Dot(vertJ, vertJ) + Vector2.Dot(vertJ, vertN) + Vector2.Dot(vertN, vertN));
+            denominator += cross;
+        }
+        return (mass / 6) * (numerator / denominator);
+    };
+    return Vertices;
 }());
 //This class handles all of the timing related operations
 var Time;
@@ -862,85 +939,201 @@ var Transform = (function (_super) {
     return Transform;
 }(Component));
 ;
-var AABB = (function () {
-    function AABB() {
-        this.min = Vector2.zero;
-        this.max = Vector2.zero;
-    }
-    return AABB;
-}());
-var Collider = (function () {
-    function Collider() {
-        this.physicsMaterial = new PhysicsMaterial(0.5, 0.8);
-        this.transform = new Transform();
-        this.axisAlignedBoundingBox = new AABB();
-        this.name = "Collider";
-    }
-    return Collider;
-}());
-var BoxCollider = (function (_super) {
-    __extends(BoxCollider, _super);
-    function BoxCollider(t) {
+var Rigidbody = (function (_super) {
+    __extends(Rigidbody, _super);
+    function Rigidbody() {
         _super.call(this);
-        this.name = "Box";
-        this.transform = t;
-        this.axisAlignedBoundingBox.min = this.transform.position.Clone();
-        this.axisAlignedBoundingBox.max = Vector2.Add(this.transform.position, this.transform.scale);
+        this.name = "Rigidbody";
+        this._position = Vector2.zero;
+        this._force = Vector2.zero;
+        this._torque = 0;
+        this._positionalImpulse = Vector2.zero;
+        this._rotationalImpulse = Vector2.zero;
+        this._contactCount = 0;
+        this._angle = 0;
+        this._speed = 0;
+        this._angularSpeed = 0;
+        this._velocity = Vector2.zero;
+        this._staticBody = false;
+        this._asleep = false;
+        this._motion = 0;
+        this._sleepTime = 60;
+        this._density = 0.001;
+        this._restitution = 0;
+        this._friction = 0.1;
+        this._staticFriction = 0.5;
+        this._airFriction = 0.01;
+        this._slop = 0.05;
+        this._inertiaScale = 4;
     }
-    BoxCollider.prototype.GetX = function () {
-        return this.transform.position.x;
-    };
-    BoxCollider.prototype.GetY = function () {
-        return this.transform.position.y;
-    };
-    BoxCollider.prototype.GetWidth = function () {
-        return this.transform.scale.x;
-    };
-    BoxCollider.prototype.GetHeight = function () {
-        return this.transform.scale.y;
-    };
-    return BoxCollider;
-}(Collider));
-var CircleCollider = (function (_super) {
-    __extends(CircleCollider, _super);
-    function CircleCollider(t, r) {
-        _super.call(this);
-        this._radius = 1.0;
-        this.diameter = this.radius * 2;
-        this.area = Mathf.PI * this.radius * this.radius;
-        this.name = "Circle";
-        this.transform = t;
-        this.transform.scale = new Vector2(r, r);
-        this.radius = r;
-        this.area = Mathf.PI * this.radius * this.radius;
-        this.diameter = this.radius * 2;
-    }
-    Object.defineProperty(CircleCollider.prototype, "radius", {
-        set: function (r) {
-            this._radius = r;
-        },
+    Object.defineProperty(Rigidbody.prototype, "position", {
+        get: function () { return this._position; },
+        set: function (p) { this._position = p; },
         enumerable: true,
         configurable: true
     });
-    return CircleCollider;
-}(Collider));
-var PolygonCollider = (function (_super) {
-    __extends(PolygonCollider, _super);
-    function PolygonCollider() {
-        _super.call(this);
-    }
-    return PolygonCollider;
-}(Collider));
-var Rigidbody = (function (_super) {
-    __extends(Rigidbody, _super);
-    function Rigidbody(m) {
-        _super.call(this);
-        this.velocity = Vector2.zero;
-        this.mass = m;
-        this.inverseMass = 1 / this.mass;
-        this.restitution = this.inverseMass * 4;
-        console.log("Generated restitution = " + this.restitution);
-    }
+    ;
+    Object.defineProperty(Rigidbody.prototype, "force", {
+        get: function () { return this._force; },
+        set: function (f) { this._force = f; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "torque", {
+        get: function () { return this._torque; },
+        set: function (t) { this._torque = t; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "positionalImpulse", {
+        get: function () { return this._positionalImpulse; },
+        set: function (pI) { this._positionalImpulse = pI; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "rotationalImpulse", {
+        get: function () { return this._rotationalImpulse; },
+        set: function (rI) { this._rotationalImpulse = rI; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "contactCount", {
+        get: function () { return this._contactCount; },
+        set: function (cC) { this._contactCount = cC; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "angle", {
+        get: function () { return this._angle; },
+        set: function (a) { this._angle = a; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "speed", {
+        get: function () { return this._speed; },
+        set: function (s) { this._speed = s; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "angularSpeed", {
+        get: function () { return this._angularSpeed; },
+        set: function (aS) { this._angularSpeed = aS; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "velocity", {
+        get: function () { return this._velocity; },
+        set: function (v) { this._velocity = v; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "staticBody", {
+        get: function () { return this._staticBody; },
+        set: function (s) { this._staticBody = s; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "asleep", {
+        get: function () { return this._asleep; },
+        set: function (a) { this._asleep = a; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "motion", {
+        get: function () { return this._motion; },
+        set: function (m) { this._motion = m; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "sleepTime", {
+        get: function () { return this._sleepTime; },
+        set: function (sT) { this._sleepTime = sT; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "density", {
+        get: function () { return this._density; },
+        set: function (d) { this._density = d; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "restitution", {
+        get: function () { return this._restitution; },
+        set: function (r) { this._restitution = r; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "friction", {
+        get: function () { return this._friction; },
+        set: function (f) { this._friction = f; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "staticFriction", {
+        get: function () { return this._staticFriction; },
+        set: function (f) { this._staticFriction = f; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "airFriction", {
+        get: function () { return this._airFriction; },
+        set: function (f) { this._airFriction = f; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "slop", {
+        get: function () { return this._slop; },
+        set: function (s) { this._slop = s; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(Rigidbody.prototype, "inertiaScale", {
+        get: function () { return this._inertiaScale; },
+        set: function (s) { this._inertiaScale = s; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
     return Rigidbody;
 }(Component));
 //A renderable shape
@@ -974,8 +1167,6 @@ var GameObject // extends SceneNode
         //For now they are defined manually
         this.transform = new Transform();
         this.renderer = new Rectangle();
-        this.body = new Body();
-        this.body.rigidbody = new Rigidbody(5);
     }
     return GameObject // extends SceneNode
     ;
@@ -1107,273 +1298,3 @@ var Renderer = (function () {
 }());
 //Create a default one for static use, this allows for multiple renderers
 var Display = new Renderer();
-var Body = (function () {
-    function Body() {
-        this.collider = new BoxCollider(new Transform());
-        this.rigidbody = new Rigidbody(1);
-    }
-    return Body;
-}());
-//Contact point
-var Contact = (function () {
-    function Contact() {
-        this.position = Vector2.zero;
-        this.normal = Vector2.zero;
-        this.penetration = 0;
-    }
-    return Contact;
-}());
-//Generic manifold, holding collision data
-var Manifold = (function () {
-    function Manifold() {
-        //All points of contact
-        this.contacts = new Array(2);
-        this.contacts.length = 2;
-        for (var i = 0; i < this.contacts.length; i++)
-            this.contacts[i] = new Contact();
-        this.contactCount = 0;
-    }
-    return Manifold;
-}());
-/*
-* The following functions have one purpose: to generate a manifold, given two objects
-*/
-function BoxToBox(boxA, boxB) {
-    Debug.Log("BoxToBox function being called.");
-    /*if(boxA.GetX() < boxB.GetX() + boxB.GetWidth() && boxA.GetX() + boxA.GetWidth() > boxB.GetX() && boxA.GetY() < boxB.GetY() + boxB.GetHeight() && boxA.GetHeight() + boxA.GetY() > boxB.GetY()) {
-         return true;
-    } else {
-        return false;
-    }*/
-    var manifold = new Manifold();
-    //From A to B
-    var translation = new Vector2((boxB.transform.position.x - boxA.transform.position.x), (boxB.transform.position.y - boxA.transform.position.y));
-    var a_extent = (boxA.axisAlignedBoundingBox.max.x - boxA.axisAlignedBoundingBox.min.x) / 2;
-    var b_extent = (boxB.axisAlignedBoundingBox.max.x - boxB.axisAlignedBoundingBox.min.x) / 2;
-    var overlap = new Vector2((a_extent + b_extent - Mathf.Abs(translation.x)), (a_extent + b_extent - Mathf.Abs(translation.y)));
-    manifold.contacts[0].position = new Vector2(Mathf.Max(boxA.axisAlignedBoundingBox.min.x, boxB.axisAlignedBoundingBox.min.x), Mathf.Max(boxA.axisAlignedBoundingBox.min.y, boxB.axisAlignedBoundingBox.min.y));
-    manifold.contacts[1].position = new Vector2(Mathf.Max(boxA.axisAlignedBoundingBox.max.x, boxB.axisAlignedBoundingBox.max.x), Mathf.Max(boxA.axisAlignedBoundingBox.max.y, boxB.axisAlignedBoundingBox.max.y));
-    if (overlap.x > overlap.y) {
-        manifold.contacts[0].normal = (translation.x < 0) ? Vector2.right : Vector2.left;
-        manifold.contacts[0].penetration = overlap.x;
-    }
-    else {
-        manifold.contacts[1].normal = (translation.y < 0) ? Vector2.up : Vector2.down;
-        manifold.contacts[1].penetration = overlap.y;
-    }
-    /*
-        if(x_overlap > y_overlap)
-    {
-      // Point towards B knowing that t points from A to B
-      c->normal = t.x < 0 ? Vec( 1, 0 ) : Vec( -1, 0 )
-      c->penetration = x_overlap;
-    }
-    else
-    {
-      // Point toward B knowing that t points from A to B
-      c->normal = t.y < 0 ? Vec( 0, 1 ) : Vec( 0, -1 );
-      c->penetration = y_overlap;
-    }
-    */
-    return manifold;
-}
-//Perfect
-function CircleToCircle(c1, c2) {
-    Debug.Log("CircleToCircle function being called.");
-    /*if(Mathf.Sqrt(((Mathf.Pow((c1.transform.position.x - c2.transform.position.x) , 2)) + (Mathf.Pow((c1.transform.position.y - c2.transform.position.y) , 2)))) <= c1.radius + c2.radius) {
-        return true;
-    } else {
-        return false;
-    }*/
-    var manifold = new Manifold();
-    var translationVector = new Vector2((c2.transform.position.x - c1.transform.position.x), (c2.transform.position.y - c1.transform.position.y));
-    var radii = c1.radius + c2.radius;
-    if (translationVector.SqrMagnitude() > radii * radii)
-        return null;
-    var distance = translationVector.Magnitude();
-    var contact1 = new Contact();
-    manifold.contacts[0] = contact1;
-    if (distance == 0) {
-        manifold.contacts[0].penetration = c1.radius;
-        manifold.contacts[0].normal = Vector2.up;
-        manifold.contacts[0].position = c1.transform.position;
-        manifold.contactCount++;
-    }
-    else {
-        manifold.contacts[0].penetration = radii - distance;
-        manifold.contacts[0].normal = new Vector2((translationVector.x / distance), (translationVector.y / distance));
-        manifold.contacts[0].position.x = manifold.contacts[0].normal.x * c1.radius + c1.transform.position.x;
-        manifold.contacts[0].position.y = manifold.contacts[0].normal.y * c1.radius + c1.transform.position.y;
-        manifold.contactCount++;
-    }
-    manifold.colliderA = c1;
-    manifold.colliderB = c2;
-    return manifold;
-}
-function CircleToBox(c, b) {
-    var manifold = new Manifold();
-    manifold.colliderA = c;
-    manifold.colliderB = b;
-    //From A to B
-    var translationVector = new Vector2((b.transform.position.x - c.transform.position.x), (b.transform.position.y - c.transform.position.y));
-    var closest = translationVector;
-    var x_extent = (c.axisAlignedBoundingBox.max.x - b.axisAlignedBoundingBox.min.x) / 2;
-    var y_extent = (c.axisAlignedBoundingBox.max.y - b.axisAlignedBoundingBox.min.y) / 2;
-    closest.x = Mathf.Clamp(closest.x, -x_extent, x_extent);
-    closest.y = Mathf.Clamp(closest.y, -y_extent, y_extent);
-    var inside = false;
-    if (Vector2.Equal(translationVector, closest)) {
-        inside = true;
-        if (Mathf.Abs(translationVector.x) > Mathf.Abs(translationVector.y)) {
-            if (closest.x > 0) {
-                closest.x = x_extent;
-            }
-            else {
-                closest.x = -x_extent;
-            }
-        }
-        else {
-            if (closest.y > 0) {
-                closest.y = y_extent;
-            }
-            else {
-                closest.y = -y_extent;
-            }
-        }
-    }
-    var normal = new Vector2(translationVector.x - closest.x, translationVector.y - closest.y);
-    var distance = normal.SqrMagnitude();
-    var radius = c.radius;
-    if (distance > radius * radius && !inside) {
-        return null;
-    }
-    distance = Mathf.Sqrt(distance);
-    if (inside) {
-        manifold.contacts[0].normal = new Vector2(-translationVector.x, -translationVector.y);
-        manifold.contacts[0].penetration = radius - distance;
-    }
-    else {
-        manifold.contacts[0].normal = translationVector.Clone();
-        manifold.contacts[0].penetration = radius - distance;
-    }
-    return manifold;
-}
-function BoxToCircle(b, c) {
-    Debug.Log("BoxToCircle function being called.");
-    return CircleToBox(c, b);
-}
-//Add CircleToLine (done, but need to import code from MikeJS)
-function CircleToPoint(c, p) {
-    if (Vector2.Distance(c.transform.position, p) <= c.radius) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-function PointToCircle(p, c) {
-    return CircleToPoint(c, p);
-}
-function PointToBox(p, b) {
-    if (p.x >= b.transform.position.x && p.x <= b.transform.position.x + b.transform.scale.y && p.y >= b.transform.position.y && p.y <= b.transform.position.y + b.transform.scale.y) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-function BoxToPoint(b, p) {
-    return PointToBox(p, b);
-}
-function PointToPoint(p1, p2) {
-    if (Vector2.Distance(p1, p2) <= Mathf.Rounding) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-var CollisionSolver;
-(function (CollisionSolver) {
-    /**
-     * End goal:
-     * There should be a function that takes in two Bodies and solves the collision
-     * Firstly, it will check each Body's Child Collider's names (e.g. BoxCollider or CircleCollider) and concatenate a string to pass to eval()
-     * eval() will take the string, run the code and return the Manifold which contains collision data on how to solve the collision
-     * Then, it will solve the collision and return a bool perhaps?
-     */
-    //This function is to die
-    function CheckCollision(objectA, objectB) {
-        var aName = objectA.name;
-        var bName = objectB.name;
-        var funcName = aName + "To" + bName;
-        console.log("Calling CollisionSolver.CheckCollision(): " + funcName);
-        //var funcToCall = new Function(funcName);
-        return eval(funcName + "(" + "objectA" + ", objectB)");
-    }
-    CollisionSolver.CheckCollision = CheckCollision;
-    //Import useful code from 'CheckCollision' into this such as the string contcat and eval() to find Manifold
-    function ResolveCollision(objectA, objectB) {
-        //This needs to have a GetComponent<>()
-        //Generic code
-        var collisionData = eval((objectA.collider.name + "To" + objectB.collider.name) + "(objectA.collider, objectB.collider)");
-        console.log(collisionData);
-        //Relative velocity
-        var relativeVelocity = new Vector2(objectB.rigidbody.velocity.x - objectA.rigidbody.velocity.x, objectB.rigidbody.velocity.y - objectA.rigidbody.velocity.y);
-        //Velocity along the Normal
-        var velocityAlongNormal = Vector2.Dot(relativeVelocity, collisionData.contacts[0].normal);
-        if (velocityAlongNormal >= 0) {
-            return false;
-        }
-        var restitution = Mathf.Min(objectA.rigidbody.restitution, objectB.rigidbody.restitution);
-        //Temp
-        restitution = 0.2;
-        var impulseScalar = -(1 + restitution) * velocityAlongNormal;
-        impulseScalar /= objectA.rigidbody.inverseMass + objectB.rigidbody.inverseMass;
-        var impulse = new Vector2((collisionData.contacts[0].normal.x * impulseScalar), (collisionData.contacts[0].normal.y * impulseScalar));
-        /*objectA.rigidbody.velocity.x -= objectA.rigidbody.inverseMass * impulse.x;
-        objectA.rigidbody.velocity.y -= objectA.rigidbody.inverseMass * impulse.y;
-        
-        objectB.rigidbody.velocity.x += objectB.rigidbody.inverseMass * impulse.x;
-        objectB.rigidbody.velocity.y += objectB.rigidbody.inverseMass * impulse.y;*/
-        var massSum = objectA.rigidbody.mass + objectB.rigidbody.mass;
-        var ratio = objectA.rigidbody.mass / massSum;
-        objectA.rigidbody.velocity.x -= ratio * impulse.x;
-        objectA.rigidbody.velocity.y -= ratio * impulse.y;
-        ratio = objectB.rigidbody.mass / massSum;
-        objectB.rigidbody.velocity.x += ratio * impulse.x;
-        objectB.rigidbody.velocity.y += ratio * impulse.y;
-        return true;
-    }
-    CollisionSolver.ResolveCollision = ResolveCollision;
-})(CollisionSolver || (CollisionSolver = {}));
-var Broadphase;
-(function (Broadphase) {
-    function GeneratePairs(bodies) {
-        var pairs = [];
-        for (var i = 0; i < bodies.length; i++) {
-            for (var j = 0; j < bodies.length; j++) {
-                var bodyA = bodies[i];
-                var bodyB = bodies[j];
-                if (bodyA === bodyB)
-                    continue;
-                if (bodyA.collider.transform.position.x < bodyB.collider.transform.position.x + bodyB.collider.transform.scale.x && bodyA.collider.transform.position.x + bodyA.collider.transform.scale.x > bodyB.collider.transform.position.x && bodyA.collider.transform.position.y < bodyB.collider.transform.position.y + bodyB.collider.transform.scale.y && bodyA.collider.transform.scale.y + bodyA.collider.transform.position.y > bodyB.collider.transform.position.y) {
-                    pairs.push(bodyA);
-                    pairs.push(bodyB);
-                }
-            }
-        }
-    }
-    Broadphase.GeneratePairs = GeneratePairs;
-})(Broadphase || (Broadphase = {}));
-var PhysicsConstants;
-(function (PhysicsConstants) {
-    var GRAVITY = -9.8;
-})(PhysicsConstants || (PhysicsConstants = {}));
-var PhysicsMaterial = (function () {
-    function PhysicsMaterial(f, b) {
-        this.friction = f || 0.5;
-        this.bounce = b || 0.8;
-    }
-    return PhysicsMaterial;
-}());

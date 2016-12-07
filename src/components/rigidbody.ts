@@ -1,14 +1,94 @@
 class Rigidbody extends Component {
-    mass:number;
-    inverseMass:number;
-    velocity: Vector2 = Vector2.zero;
-    restitution: number;
     
-    constructor(m: number) {
+    private _position: Vector2;
+    private _force: Vector2;
+    private _torque: number;
+    private _positionalImpulse: Vector2;
+    private _rotationalImpulse: Vector2;
+    private _contactCount: number;
+    private _angle: number;
+    private _speed: number;
+    private _angularSpeed: number;
+    private _velocity: Vector2;
+    private _staticBody: boolean;
+    private _asleep: boolean;
+    private _motion: number;
+    private _sleepTime: number;
+    private _density: number;
+    private _restitution: number;
+    private _friction: number;
+    private _staticFriction: number;
+    private _airFriction: number;
+    private _slop: number;
+    private _inertiaScale: number;
+
+    constructor() {
         super();
-        this.mass = m;
-        this.inverseMass = 1 / this.mass;
-        this.restitution = this.inverseMass * 4;
-        console.log("Generated restitution = " + this.restitution);
+        this.name = "Rigidbody";
+        this._position = Vector2.zero;
+        this._force = Vector2.zero;
+        this._torque = 0;
+        this._positionalImpulse = Vector2.zero;
+        this._rotationalImpulse = Vector2.zero;
+        this._contactCount = 0;
+        this._angle = 0; 
+        this._speed = 0;
+        this._angularSpeed = 0;
+        this._velocity = Vector2.zero;
+        this._staticBody = false;
+        this._asleep = false;
+        this._motion = 0;
+        this._sleepTime = 60;
+        this._density = 0.001;
+        this._restitution = 0;
+        this._friction = 0.1;
+        this._staticFriction = 0.5;
+        this._airFriction = 0.01;
+        this._slop = 0.05;
+        this._inertiaScale = 4;
     }
+
+    public get position() : Vector2 { return this._position; };
+    public get force() : Vector2 { return this._force; };
+    public get torque() : number { return this._torque; };
+    public get positionalImpulse() : Vector2 { return this._positionalImpulse; };
+    public get rotationalImpulse() : Vector2 { return this._rotationalImpulse; };
+    public get contactCount() : number { return this._contactCount; };
+    public get angle() : number { return this._angle; };
+    public get speed() : number { return this._speed; };
+    public get angularSpeed() : number { return this._angularSpeed; };
+    public get velocity() : Vector2 { return this._velocity; };
+    public get staticBody() : boolean { return this._staticBody; };
+    public get asleep() : boolean { return this._asleep; };
+    public get motion() : number { return this._motion; };
+    public get sleepTime() : number { return this._sleepTime; };
+    public get density() : number { return this._density; };
+    public get restitution() : number { return this._restitution; };
+    public get friction() : number { return this._friction; };
+    public get staticFriction() : number { return this._staticFriction; };
+    public get airFriction() : number { return this._airFriction; };
+    public get slop() : number { return this._slop; };
+    public get inertiaScale() : number { return this._inertiaScale; };
+
+    public set position(p: Vector2) { this._position = p; };
+    public set force(f: Vector2) { this._force = f };
+    public set torque(t: number) { this._torque = t; };
+    public set positionalImpulse(pI: Vector2) { this._positionalImpulse = pI; };
+    public set rotationalImpulse(rI: Vector2) { this._rotationalImpulse = rI; };
+    public set contactCount(cC: number) { this._contactCount = cC; };
+    public set angle(a: number) { this._angle = a; };
+    public set speed(s: number) { this._speed = s; };
+    public set angularSpeed(aS: number) { this._angularSpeed = aS; };
+    public set velocity(v: Vector2) { this._velocity = v; };
+    public set staticBody(s: boolean) { this._staticBody = s; };
+    public set asleep(a: boolean) { this._asleep = a; };
+    public set motion(m: number) { this._motion = m; };
+    public set sleepTime(sT: number) { this._sleepTime = sT; };
+    public set density(d: number) { this._density = d; };
+    public set restitution(r: number) { this._restitution = r; };
+    public set friction(f: number) { this._friction = f; };
+    public set staticFriction(f: number) { this._staticFriction = f; };
+    public set airFriction(f: number) { this._airFriction = f; };
+    public set slop(s: number) { this._slop = s; };
+    public set inertiaScale(s: number) { this._inertiaScale = s; };
 }

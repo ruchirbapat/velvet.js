@@ -34,18 +34,19 @@ class Vector2
     public static down : Vector2    = new Vector2(0, -1);
 
     //Static vector math functions:
-    public static Dot(lhs : Vector2, rhs : Vector2)                        : number { return (lhs.x * rhs.x) + (lhs.y * rhs.y); }
-    public static Det(lhs : Vector2, rhs : Vector2)                        : number { return (lhs.x * rhs.y) - (lhs.y * rhs.x);}
-    public static Angle(from : Vector2, to : Vector2)                      : number { return Mathf.Atan2(Vector2.Dot(from, to), Vector2.Det(from, to)); }
-    public static SqrDistance(a : Vector2, b : Vector2)                    : number { return Mathf.Pow(b.x - a.x, 2) + Mathf.Pow(b.y - a.y, 2); }
-    public static Distance(a : Vector2, b : Vector2)                       : number { return Mathf.Sqrt(Vector2.SqrDistance(a, b)); }
-    public static SetMagnitude(vec : Vector2, mag : number)                :Vector2 { return Vector2.Mul(vec.Normalize(), mag); }
-    public static ClampMagnitude(vec : Vector2, min : number, max : number):Vector2 { return Vector2.SetMagnitude(vec, Mathf.Clamp(vec.Magnitude(), min, max)); }
-    public static Lerp(a : Vector2, b : Vector2, t : number)              : Vector2 { return new Vector2(Mathf.Lerp(a.x, b.x, t), Mathf.Lerp(a.y, b.y, t)); }
-    public static LerpUnclamped(a : Vector2, b : Vector2, t : number)     : Vector2 { return new Vector2(Mathf.LerpUnclamped(a.x, b.x, t), Mathf.LerpUnclamped(a.y, b.y, t)); }
-    public static Max(l : Vector2, r : Vector2)                           : Vector2 { return new Vector2((l.x > r.x) ? l.x : r.x, (l.y > r.y) ? l.y : r.y); }
-    public static Min(l : Vector2, r : Vector2)                           : Vector2 { return new Vector2((l.x < r.x) ? l.x : r.x, (l.y < r.y) ? l.y : r.y); }
-    public static MoveTowards(c : Vector2, t : Vector2, d : number)       : Vector2 { return new Vector2(Mathf.MoveTowards(c.x, t.x, d), Mathf.MoveTowards(c.y, t.y, d)); }
+    public static Cross(lhs: Vector2, rhs: Vector2)                         : number { return (lhs.x * rhs.y) - (lhs.y * rhs.x); };
+    public static Dot(lhs : Vector2, rhs : Vector2)                         : number { return (lhs.x * rhs.x) + (lhs.y * rhs.y); }
+    public static Det(lhs : Vector2, rhs : Vector2)                         : number { return (lhs.x * rhs.y) - (lhs.y * rhs.x);}
+    public static Angle(from : Vector2, to : Vector2)                       : number { return Mathf.Atan2(Vector2.Dot(from, to), Vector2.Det(from, to)); }
+    public static SqrDistance(a : Vector2, b : Vector2)                     : number { return Mathf.Pow(b.x - a.x, 2) + Mathf.Pow(b.y - a.y, 2); }
+    public static Distance(a : Vector2, b : Vector2)                        : number { return Mathf.Sqrt(Vector2.SqrDistance(a, b)); }
+    public static SetMagnitude(vec : Vector2, mag : number)                 : Vector2 { return Vector2.Mul(vec.Normalize(), mag); }
+    public static ClampMagnitude(vec : Vector2, min : number, max : number) : Vector2 { return Vector2.SetMagnitude(vec, Mathf.Clamp(vec.Magnitude(), min, max)); }
+    public static Lerp(a : Vector2, b : Vector2, t : number)                : Vector2 { return new Vector2(Mathf.Lerp(a.x, b.x, t), Mathf.Lerp(a.y, b.y, t)); }
+    public static LerpUnclamped(a : Vector2, b : Vector2, t : number)       : Vector2 { return new Vector2(Mathf.LerpUnclamped(a.x, b.x, t), Mathf.LerpUnclamped(a.y, b.y, t)); }
+    public static Max(l : Vector2, r : Vector2)                             : Vector2 { return new Vector2((l.x > r.x) ? l.x : r.x, (l.y > r.y) ? l.y : r.y); }
+    public static Min(l : Vector2, r : Vector2)                             : Vector2 { return new Vector2((l.x < r.x) ? l.x : r.x, (l.y < r.y) ? l.y : r.y); }
+    public static MoveTowards(c : Vector2, t : Vector2, d : number)         : Vector2 { return new Vector2(Mathf.MoveTowards(c.x, t.x, d), Mathf.MoveTowards(c.y, t.y, d)); }
 
     //Helpful static functions
     public static RoundInt(vec : Vector2) : Vector2 { return new Vector2(vec.x, vec.y); }

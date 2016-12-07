@@ -18,6 +18,7 @@
         "helper/mathf.ts",
         "helper/rand.ts",
         "helper/vector.ts",
+        "helper/vertices.ts",
         
         //Core program
         "core/time.ts",
